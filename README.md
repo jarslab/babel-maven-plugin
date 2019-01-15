@@ -14,3 +14,31 @@ or development version,
 * **`prefix`** - optional prefix applied for every translated file,
 * **`presets`** - presets for Babel execution (default: _es2015_),
 
+## Example
+```xml
+<plugin>
+    <groupId>com.jarslab.maven</groupId>
+    <artifactId>babel-maven-plugin</artifactId>
+    <version>1.0.0</version>
+    <executions>
+        <execution>
+            <id>js-transpile</id>
+            <phase>process-resources</phase>
+            <goals>
+                <goal>babel</goal>
+            </goals>
+            <configuration>
+                <verbose>true</verbose>
+                <babelSrc>${project.basedir}/target/classes/assets/jslib/babel.min.js</babelSrc>
+                <sourceDir>${project.basedir}/target/classes/assets/</sourceDir>
+                <targetDir>${project.basedir}/target/classes/assets/</targetDir>
+                <jsSourceIncludes>
+                    <jsSourceInclude>src/*.js</jsSourceInclude>
+                </jsSourceIncludes>
+                <prefix>trans-</prefix>
+                <presets>react,es2015</presets>
+            </configuration>
+        </execution>
+    </executions>
+</plugin>
+```
