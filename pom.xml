@@ -4,7 +4,7 @@
     <groupId>com.jarslab.maven</groupId>
     <artifactId>babel-maven-plugin</artifactId>
     <packaging>maven-plugin</packaging>
-    <version>1.0</version>
+    <version>1.1-SNAPSHOT</version>
     <name>babel-maven-plugin</name>
 
     <prerequisites>
@@ -137,7 +137,7 @@
         <connection>scm:git:git@github.com:milpol/babel-maven-plugin.git</connection>
         <developerConnection>scm:git:git@github.com:milpol/babel-maven-plugin.git</developerConnection>
         <url>https://github.com/milpol/babel-maven-plugin</url>
-        <tag>babel-maven-plugin-1.0</tag>
+        <tag>HEAD</tag>
     </scm>
 
     <issueManagement>
