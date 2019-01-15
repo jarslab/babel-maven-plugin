@@ -11,5 +11,6 @@ or development version,
 * **`jsFiles`** - list of JavaScript files (static)  from `sourceDir` to translate,
 * **`jsIncludes`** - list of JavaScript files (with simple masks `*`/`?`),
 * **`jsExcludes`** - list of exceptions for `jsIncludes`,
+* **`prefix`** - optional prefix applied for every translated file,
 * **`presets`** - presets for Babel execution (default: _es2015_),
 
