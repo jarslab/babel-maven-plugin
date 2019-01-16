@@ -2,6 +2,15 @@
 Plugin lets you to execute Babel transcription for given JavaScript files. 
 It requires no npm or node.js, it is plain Java project which works perfectly combined with WebJars.
 
+## Maven coords
+```xml
+<dependency>
+  <groupId>com.jarslab.maven</groupId>
+  <artifactId>babel-maven-plugin</artifactId>
+  <version>1.0</version>
+</dependency>
+```
+
 ## Settings, ie buttons and knobs
 * **`verbose`** - no surprises, the execution becomes a bit more talkative (default: _false_),
 * **`babelSrc`** - readable path to standalone(!) Babel sources. It can be provided from WebJars dependency, minified 
