@@ -39,7 +39,7 @@ class BabelTranspiler
     {
         try {
             final FileReader fileReader = new FileReader(babelSource);
-            final ScriptEngine engine = new ScriptEngineManager().getEngineByMimeType(JAVASCRIPT_MIME_TYPE);
+            final ScriptEngine engine = new ScriptEngineManager(null).getEngineByMimeType(JAVASCRIPT_MIME_TYPE);
             final SimpleBindings simpleBindings = new SimpleBindings();
             engine.eval(fileReader, simpleBindings);
             simpleBindings.put(INPUT_VARIABLE, new String(Files.readAllBytes(sourceFilePath)));
