@@ -7,7 +7,7 @@
     <version>1.2-SNAPSHOT</version>
     <name>Babel Maven Plugin</name>
     <description>Transpile JavaScript files in Babel in pure Java.</description>
-    <url>https://github.com/milpol/babel-maven-plugin</url>
+    <url>https://github.com/jarslab/babel-maven-plugin</url>
     <licenses>
         <license>
             <name>MIT License</name>
@@ -158,15 +158,15 @@
     </profiles>
 
     <scm>
-        <connection>scm:git:git@github.com:milpol/babel-maven-plugin.git</connection>
-        <developerConnection>scm:git:git@github.com:milpol/babel-maven-plugin.git</developerConnection>
-        <url>https://github.com/milpol/babel-maven-plugin</url>
+        <connection>scm:git:git@github.com:jarslab/babel-maven-plugin.git</connection>
+        <developerConnection>scm:git:git@github.com:jarslab/babel-maven-plugin.git</developerConnection>
+        <url>https://github.com/jarslab/babel-maven-plugin</url>
         <tag>HEAD</tag>
     </scm>
 
     <issueManagement>
         <system>Github</system>
-        <url>https://github.com/milpol/babel-maven-plugin/issues</url>
+        <url>https://github.com/jarslab/babel-maven-plugin/issues</url>
     </issueManagement>
 
     <distributionManagement>
