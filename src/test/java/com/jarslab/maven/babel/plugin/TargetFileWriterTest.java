@@ -19,7 +19,7 @@ public class TargetFileWriterTest
     {
         //given
         final TargetFileWriter targetFileWriter = new TargetFileWriter(
-                TestUtils.getBasePath(), TMP_DIRECTORY, "");
+                TestUtils.getBasePath(), TMP_DIRECTORY, null);
         //when
         targetFileWriter.writeTargetFile(
                 Paths.get(TestUtils.getBasePath(), "/src/test.js"),

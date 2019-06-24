@@ -20,7 +20,7 @@ class TargetFileWriter
     {
         this.sourceDir = requireNonNull(sourceDir);
         this.targetDir = requireNonNull(targetDir);
-        this.prefix = requireNonNull(prefix);
+        this.prefix = prefix != null ? prefix : "";
     }
 
     void writeTargetFile(final Path sourceFile,
