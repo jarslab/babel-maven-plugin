@@ -1,12 +1,16 @@
 package com.jarslab.maven.babel.plugin;
 
+import org.apache.maven.plugin.logging.Log;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.concurrent.Executors;
 
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
@@ -16,8 +20,13 @@ import static org.mockito.Mockito.verify;
 @RunWith(MockitoJUnitRunner.class)
 public class BabelTranspilerTest
 {
+    @Rule
+    public ExpectedException expectedException = ExpectedException.none();
+
     @Mock
     private TargetFileWriter targetFileWriter;
+    @Mock
+    private Log log;
 
     @Test
     public void shouldTranspileEs6File()
@@ -25,10 +34,11 @@ public class BabelTranspilerTest
         //given
         final Path sourceFilePath = Paths.get(TestUtils.getBasePath(), "/src/a/test-es6.js");
         final BabelTranspiler babelTranspiler = new BabelTranspiler(
-                targetFileWriter,
+                false, log, targetFileWriter,
                 Paths.get(TestUtils.getBabelPath()).toFile(),
                 sourceFilePath,
-                "'es2015'");
+                "'es2015'",
+                null);
         //when
         babelTranspiler.execute();
         //then
@@ -44,12 +54,50 @@ public class BabelTranspilerTest
         //given
         final Path sourceFilePath = Paths.get(TestUtils.getBasePath(), "/src/a/test-react.js");
         final BabelTranspiler babelTranspiler = new BabelTranspiler(
-                targetFileWriter,
+                false, log, targetFileWriter,
                 Paths.get(TestUtils.getBabelPath()).toFile(),
                 sourceFilePath,
-                "'react'");
+                "'react'",
+                null);
         //when
         babelTranspiler.execute();
+        //then
+        verify(targetFileWriter, times(1))
+                .writeTargetFile(
+                        eq(sourceFilePath),
+                        argThat(arg -> new String(arg).contains("createElement")));
+    }
+
+    @Test
+    public void shouldFailForNullExecutor()
+    {
+        //given
+        final Path sourceFilePath = Paths.get(TestUtils.getBasePath(), "/src/a/test-react.js");
+        final BabelTranspiler babelTranspiler = new BabelTranspiler(
+                false, log, targetFileWriter,
+                Paths.get(TestUtils.getBabelPath()).toFile(),
+                sourceFilePath,
+                "'react'",
+                null);
+        //expect
+        expectedException.expect(NullPointerException.class);
+        //when
+        babelTranspiler.executeAsync();
+    }
+
+    @Test
+    public void shouldTranspileReactFileAsync()
+    {
+        //given
+        final Path sourceFilePath = Paths.get(TestUtils.getBasePath(), "/src/a/test-react.js");
+        final BabelTranspiler babelTranspiler = new BabelTranspiler(
+                false, log, targetFileWriter,
+                Paths.get(TestUtils.getBabelPath()).toFile(),
+                sourceFilePath,
+                "'react'",
+                Executors.newSingleThreadExecutor());
+        //when
+        babelTranspiler.executeAsync().join();
         //then
         verify(targetFileWriter, times(1))
                 .writeTargetFile(

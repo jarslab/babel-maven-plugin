@@ -12,6 +12,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -20,6 +23,8 @@ public class BabelMojo extends AbstractMojo
 {
     @Parameter(property = "verbose", defaultValue = "false")
     private boolean verbose;
+    @Parameter(property = "workers", defaultValue = "1")
+    private int workers;
     @Parameter(property = "babelSrc", required = true)
     private String babelSrc;
     @Parameter(property = "sourceDir", required = true)
@@ -40,6 +45,9 @@ public class BabelMojo extends AbstractMojo
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException
     {
+        if (verbose) {
+            getLog().info("Run in the verbose mode.");
+        }
         final File babelSrcFile = Paths.get(babelSrc).toFile();
         if (!babelSrcFile.exists() || !babelSrcFile.canRead()) {
             getLog().error("Given Babel file is not reachable.");
@@ -61,13 +69,35 @@ public class BabelMojo extends AbstractMojo
         if (verbose) {
             getLog().info(String.format("Found %s files to transpile.", sourceFiles.size()));
         }
+        final ExecutorService transpilerExecutorService = workers > 1 ?
+                Executors.newFixedThreadPool(workers) : null;
         try {
-            sourceFiles.stream()
+            final Stream<BabelTranspiler> transpilers = sourceFiles.stream()
                     .peek(this::logExtractedFile)
-                    .map(sourceFile -> new BabelTranspiler(targetFileWriter, babelSrcFile, sourceFile, formattedPresets))
-                    .forEach(BabelTranspiler::execute);
+                    .map(sourceFile -> new BabelTranspiler(
+                            verbose,
+                            getLog(),
+                            targetFileWriter,
+                            babelSrcFile,
+                            sourceFile,
+                            formattedPresets,
+                            transpilerExecutorService));
+            if (workers > 1) {
+                getLog().info(String.format("Run with %d workers.", workers));
+                CompletableFuture.allOf(transpilers
+                        .map(BabelTranspiler::executeAsync)
+                        .toArray(CompletableFuture[]::new))
+                        .join();
+            } else {
+                getLog().info("Run in single thread mode.");
+                transpilers.forEach(BabelTranspiler::execute);
+            }
         } catch (Exception e) {
             throw new MojoExecutionException("Failed on Babel transpile execution.", e);
+        } finally {
+            if (transpilerExecutorService != null) {
+                transpilerExecutorService.shutdown();
+            }
         }
         getLog().info("Babel transpile execution successful.");
     }
@@ -83,13 +113,18 @@ public class BabelMojo extends AbstractMojo
     private void logExtractedFile(final Path path)
     {
         if (verbose) {
-            getLog().debug(String.format("About to transpile: `%s`.", path));
+            getLog().info(String.format("About to transpile: `%s`.", path));
         }
     }
 
     void setVerbose(final boolean verbose)
     {
         this.verbose = verbose;
+    }
+
+    public void setWorkers(final int workers)
+    {
+        this.workers = workers;
     }
 
     void setBabelSrc(final String babelSrc)
