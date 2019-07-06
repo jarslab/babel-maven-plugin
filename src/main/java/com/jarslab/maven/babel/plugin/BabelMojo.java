@@ -8,6 +8,7 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 
 import java.io.File;
+import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
@@ -19,7 +20,7 @@ import java.util.stream.Stream;
 public class BabelMojo extends AbstractMojo
 {
     @Parameter(property = "verbose", defaultValue = "false")
-    private boolean verbose;
+    private boolean verbose = false;
     @Parameter(property = "parallel", defaultValue = "true")
     private boolean parallel = true;
     @Parameter(property = "babelSrc", required = true)
@@ -38,12 +39,16 @@ public class BabelMojo extends AbstractMojo
     private String prefix;
     @Parameter(property = "presets", defaultValue = "es2015")
     private String presets;
+    @Parameter(property = "encoding")
+    private String encoding = Charset.defaultCharset().name();
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException
     {
+        final Charset charset = Charset.forName(encoding);
         if (verbose) {
             getLog().info("Run in the verbose mode.");
+            getLog().info(String.format("Charset: %s.", charset));
         }
         final File babelSrcFile = Paths.get(babelSrc).toFile();
         if (!babelSrcFile.exists() || !babelSrcFile.canRead()) {
@@ -60,7 +65,7 @@ public class BabelMojo extends AbstractMojo
 
         final SourceFilesExtractor sourceFilesExtractor = new SourceFilesExtractor(
                 sourceDir, jsSourceFiles, jsSourceIncludes, jsSourceExcludes);
-        final TargetFileWriter targetFileWriter = new TargetFileWriter(sourceDir, targetDir, prefix);
+        final TargetFileWriter targetFileWriter = new TargetFileWriter(sourceDir, targetDir, prefix, charset);
         final String formattedPresets = getFormattedPresets(presets);
         final Set<Path> sourceFiles = sourceFilesExtractor.getSourceFiles();
         if (verbose) {
@@ -74,7 +79,8 @@ public class BabelMojo extends AbstractMojo
                             targetFileWriter,
                             babelSrcFile,
                             sourceFile,
-                            formattedPresets));
+                            formattedPresets,
+                            charset));
             if (parallel) {
                 getLog().info("Run in parallel mode.");
                 transpilers.parallel();

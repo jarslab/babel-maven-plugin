@@ -7,9 +7,11 @@ import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 import javax.script.SimpleBindings;
 import java.io.File;
-import java.io.FileReader;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.UncheckedIOException;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -27,13 +29,15 @@ class BabelTranspiler
     private final File babelSource;
     private final Path sourceFilePath;
     private final String presets;
+    private final Charset charset;
 
     BabelTranspiler(final boolean verbose,
                     final Log log,
                     final TargetFileWriter targetFileWriter,
                     final File babelSource,
                     final Path sourceFilePath,
-                    final String presets)
+                    final String presets,
+                    final Charset charset)
     {
         this.verbose = verbose;
         this.log = requireNonNull(log);
@@ -41,25 +45,29 @@ class BabelTranspiler
         this.babelSource = requireNonNull(babelSource);
         this.sourceFilePath = requireNonNull(sourceFilePath);
         this.presets = requireNonNull(presets);
+        this.charset = requireNonNull(charset);
     }
 
     void execute()
     {
         try {
-            final FileReader fileReader = new FileReader(babelSource);
-            final ScriptEngine engine = new ScriptEngineManager(null).getEngineByMimeType(JAVASCRIPT_MIME_TYPE);
+            final InputStreamReader fileReader = new InputStreamReader(
+                    new FileInputStream(babelSource), charset);
+            final ScriptEngine engine = new ScriptEngineManager(null)
+                    .getEngineByMimeType(JAVASCRIPT_MIME_TYPE);
             final SimpleBindings simpleBindings = new SimpleBindings();
             engine.eval(fileReader, simpleBindings);
-            final String source = new String(Files.readAllBytes(sourceFilePath));
+            final String source = new String(Files.readAllBytes(sourceFilePath), charset);
             if (verbose) {
                 log.debug(String.format("%s source:\n%s", sourceFilePath, source));
             }
             simpleBindings.put(INPUT_VARIABLE, source);
-            final String result = (String) engine.eval(String.format(BABEL_EXECUTE, INPUT_VARIABLE, presets), simpleBindings);
+            final String result = (String) engine.eval(
+                    String.format(BABEL_EXECUTE, INPUT_VARIABLE, presets), simpleBindings);
             if (verbose) {
                 log.debug(String.format("%s result:\n%s", sourceFilePath, result));
             }
-            targetFileWriter.writeTargetFile(sourceFilePath, result.getBytes());
+            targetFileWriter.writeTargetFile(sourceFilePath, result);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         } catch (ScriptException e) {
