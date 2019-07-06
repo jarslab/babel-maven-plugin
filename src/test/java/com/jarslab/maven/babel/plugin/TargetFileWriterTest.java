@@ -44,4 +44,22 @@ public class TargetFileWriterTest
         final byte[] bytes = Files.readAllBytes(Paths.get(TMP_DIRECTORY, "/src/t.test.js"));
         assertThat(bytes).isEqualTo(TEST_INPUT.getBytes());
     }
+
+    @Test
+    public void shouldWriteFileWithDuplicatedFileName() throws IOException
+    {
+        //given
+        final TargetFileWriter targetFileWriter = new TargetFileWriter(
+                TestUtils.getBasePath(),
+                TMP_DIRECTORY,
+                null,
+                Charset.defaultCharset());
+        //when
+        targetFileWriter.writeTargetFile(
+                Paths.get(TestUtils.getBasePath(), "/src/target"),
+                TEST_INPUT);
+        //then
+        final byte[] bytes = Files.readAllBytes(Paths.get(TMP_DIRECTORY, "src", "target"));
+        assertThat(bytes).isEqualTo(TEST_INPUT.getBytes());
+    }
 }
