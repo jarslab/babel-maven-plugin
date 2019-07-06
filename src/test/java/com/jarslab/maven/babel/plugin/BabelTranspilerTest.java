@@ -10,7 +10,6 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.concurrent.Executors;
 
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
@@ -37,8 +36,7 @@ public class BabelTranspilerTest
                 false, log, targetFileWriter,
                 Paths.get(TestUtils.getBabelPath()).toFile(),
                 sourceFilePath,
-                "'es2015'",
-                null);
+                "'es2015'");
         //when
         babelTranspiler.execute();
         //then
@@ -57,47 +55,9 @@ public class BabelTranspilerTest
                 false, log, targetFileWriter,
                 Paths.get(TestUtils.getBabelPath()).toFile(),
                 sourceFilePath,
-                "'react'",
-                null);
+                "'react'");
         //when
         babelTranspiler.execute();
-        //then
-        verify(targetFileWriter, times(1))
-                .writeTargetFile(
-                        eq(sourceFilePath),
-                        argThat(arg -> new String(arg).contains("createElement")));
-    }
-
-    @Test
-    public void shouldFailForNullExecutor()
-    {
-        //given
-        final Path sourceFilePath = Paths.get(TestUtils.getBasePath(), "/src/a/test-react.js");
-        final BabelTranspiler babelTranspiler = new BabelTranspiler(
-                false, log, targetFileWriter,
-                Paths.get(TestUtils.getBabelPath()).toFile(),
-                sourceFilePath,
-                "'react'",
-                null);
-        //expect
-        expectedException.expect(NullPointerException.class);
-        //when
-        babelTranspiler.executeAsync();
-    }
-
-    @Test
-    public void shouldTranspileReactFileAsync()
-    {
-        //given
-        final Path sourceFilePath = Paths.get(TestUtils.getBasePath(), "/src/a/test-react.js");
-        final BabelTranspiler babelTranspiler = new BabelTranspiler(
-                false, log, targetFileWriter,
-                Paths.get(TestUtils.getBabelPath()).toFile(),
-                sourceFilePath,
-                "'react'",
-                Executors.newSingleThreadExecutor());
-        //when
-        babelTranspiler.executeAsync().join();
         //then
         verify(targetFileWriter, times(1))
                 .writeTargetFile(

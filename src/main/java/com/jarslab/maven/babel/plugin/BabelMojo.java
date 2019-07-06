@@ -12,9 +12,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -23,8 +20,8 @@ public class BabelMojo extends AbstractMojo
 {
     @Parameter(property = "verbose", defaultValue = "false")
     private boolean verbose;
-    @Parameter(property = "workers", defaultValue = "1")
-    private int workers;
+    @Parameter(property = "parallel", defaultValue = "true")
+    private boolean parallel = true;
     @Parameter(property = "babelSrc", required = true)
     private String babelSrc;
     @Parameter(property = "sourceDir", required = true)
@@ -69,35 +66,24 @@ public class BabelMojo extends AbstractMojo
         if (verbose) {
             getLog().info(String.format("Found %s files to transpile.", sourceFiles.size()));
         }
-        final ExecutorService transpilerExecutorService = workers > 1 ?
-                Executors.newFixedThreadPool(workers) : null;
         try {
             final Stream<BabelTranspiler> transpilers = sourceFiles.stream()
-                    .peek(this::logExtractedFile)
                     .map(sourceFile -> new BabelTranspiler(
                             verbose,
                             getLog(),
                             targetFileWriter,
                             babelSrcFile,
                             sourceFile,
-                            formattedPresets,
-                            transpilerExecutorService));
-            if (workers > 1) {
-                getLog().info(String.format("Run with %d workers.", workers));
-                CompletableFuture.allOf(transpilers
-                        .map(BabelTranspiler::executeAsync)
-                        .toArray(CompletableFuture[]::new))
-                        .join();
-            } else {
-                getLog().info("Run in single thread mode.");
-                transpilers.forEach(BabelTranspiler::execute);
+                            formattedPresets));
+            if (parallel) {
+                getLog().info("Run in parallel mode.");
+                transpilers.parallel();
             }
+            transpilers
+                    .peek(this::logExtractedFile)
+                    .forEach(BabelTranspiler::execute);
         } catch (Exception e) {
             throw new MojoExecutionException("Failed on Babel transpile execution.", e);
-        } finally {
-            if (transpilerExecutorService != null) {
-                transpilerExecutorService.shutdown();
-            }
         }
         getLog().info("Babel transpile execution successful.");
     }
@@ -110,10 +96,11 @@ public class BabelMojo extends AbstractMojo
                 .collect(Collectors.joining(","));
     }
 
-    private void logExtractedFile(final Path path)
+    private void logExtractedFile(final BabelTranspiler babelTranspiler)
     {
         if (verbose) {
-            getLog().info(String.format("About to transpile: `%s`.", path));
+            getLog().info(String.format("About to transpile: `%s`.",
+                    babelTranspiler.getSourceFilePath()));
         }
     }
 
@@ -122,9 +109,9 @@ public class BabelMojo extends AbstractMojo
         this.verbose = verbose;
     }
 
-    public void setWorkers(final int workers)
+    public void setParallel(final boolean parallel)
     {
-        this.workers = workers;
+        this.parallel = parallel;
     }
 
     void setBabelSrc(final String babelSrc)

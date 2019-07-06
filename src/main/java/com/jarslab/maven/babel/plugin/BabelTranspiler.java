@@ -12,8 +12,6 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
 
 import static java.util.Objects.requireNonNull;
 
@@ -29,15 +27,13 @@ class BabelTranspiler
     private final File babelSource;
     private final Path sourceFilePath;
     private final String presets;
-    private final ExecutorService executorService;
 
     BabelTranspiler(final boolean verbose,
                     final Log log,
                     final TargetFileWriter targetFileWriter,
                     final File babelSource,
                     final Path sourceFilePath,
-                    final String presets,
-                    final ExecutorService executorService)
+                    final String presets)
     {
         this.verbose = verbose;
         this.log = requireNonNull(log);
@@ -45,7 +41,6 @@ class BabelTranspiler
         this.babelSource = requireNonNull(babelSource);
         this.sourceFilePath = requireNonNull(sourceFilePath);
         this.presets = requireNonNull(presets);
-        this.executorService = executorService;
     }
 
     void execute()
@@ -72,9 +67,8 @@ class BabelTranspiler
         }
     }
 
-    CompletableFuture<Void> executeAsync()
+    public Path getSourceFilePath()
     {
-        requireNonNull(executorService);
-        return CompletableFuture.runAsync(this::execute, executorService);
+        return sourceFilePath;
     }
 }
