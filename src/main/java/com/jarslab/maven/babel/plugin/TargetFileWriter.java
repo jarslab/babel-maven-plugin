@@ -31,8 +31,9 @@ class TargetFileWriter
                          final String content)
     {
         final Path sourceFileName = sourceFile.getFileName();
-        final String targetDirectory = replaceLast(sourceFileName.toString(), "",
-                sourceFile.toString().replace(sourceDir, targetDir));
+        final String targetDirectory = sourceFile.toString()
+                .replace(sourceFileName.toString(), "")
+                .replace(sourceDir, targetDir);
         try {
             Files.createDirectories(Paths.get(targetDirectory));
             Files.write(Paths.get(targetDirectory, prefix + sourceFileName),
@@ -40,19 +41,5 @@ class TargetFileWriter
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
-    }
-
-    private String replaceLast(final String target,
-                               final String replacement,
-                               final String value)
-    {
-        final int lastIndex = value.lastIndexOf(target);
-        if (lastIndex == -1) {
-            return value;
-        }
-        return String.join("",
-                value.substring(0, lastIndex),
-                replacement,
-                value.substring(lastIndex + target.length()));
     }
 }
