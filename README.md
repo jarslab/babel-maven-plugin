@@ -9,12 +9,14 @@ It requires no npm or node.js, it is plain Java project which works perfectly co
 <dependency>
   <groupId>com.jarslab.maven</groupId>
   <artifactId>babel-maven-plugin</artifactId>
-  <version>1.1</version>
+  <version>1.2</version>
 </dependency>
 ```
 
 ## Settings, ie buttons and knobs
 * **`verbose`** - no surprises, the execution becomes a bit more talkative (default: _false_),
+* **`parallel`** - if true will run files transpilation in parallel (on ForkJoin pool) (default: _true_),
+* **`encoding`** - will apply chosen encoding during files operations (read/write) (default: `Charset.defaultCharset()`),
 * **`babelSrc`** - readable path to standalone(!) Babel sources. It can be provided from WebJars dependency, minified 
 or development version,
 * **`sourceDir`** - base path for JavaScript files you are going to translate,
@@ -30,7 +32,7 @@ or development version,
 <plugin>
     <groupId>com.jarslab.maven</groupId>
     <artifactId>babel-maven-plugin</artifactId>
-    <version>1.0</version>
+    <version>1.2</version>
     <executions>
         <execution>
             <id>js-transpile</id>
