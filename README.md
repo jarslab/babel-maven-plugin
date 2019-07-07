@@ -1,3 +1,5 @@
+![Travis CI](https://api.travis-ci.org/milpol/gorilla4j.svg) ![Maven Central](https://img.shields.io/maven-central/v/com.jarslab/babel-maven-plugin.svg)
+
 # Babel Maven Plugin
 Plugin lets you to execute Babel transcription for given JavaScript files. 
 It requires no npm or node.js, it is plain Java project which works perfectly combined with WebJars.
