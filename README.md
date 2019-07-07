@@ -1,4 +1,4 @@
-![Travis CI](https://api.travis-ci.org/milpol/gorilla4j.svg) ![Maven Central](https://img.shields.io/maven-central/v/com.jarslab/babel-maven-plugin.svg)
+![Travis CI](https://api.travis-ci.org/jarslab/babel-maven-plugin.svg) ![Maven Central](https://img.shields.io/maven-central/v/com.jarslab.maven/babel-maven-plugin.svg)
 
 # Babel Maven Plugin
 Plugin lets you to execute Babel transcription for given JavaScript files. 
