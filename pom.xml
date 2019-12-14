@@ -36,6 +36,7 @@
         <maven.compiler.target>1.8</maven.compiler.target>
         <maven.api.version>3.0</maven.api.version>
         <maven.plugin.version>3.6.0</maven.plugin.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
     <dependencies>
