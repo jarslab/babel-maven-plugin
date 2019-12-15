@@ -1,14 +1,39 @@
 package com.jarslab.maven.babel.plugin;
 
-class TestUtils
-{
-    static String getBasePath()
-    {
-        return getBabelPath().replace("/babel.min.js", "");
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.URISyntaxException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.stream.Collectors;
+
+class TestUtils {
+
+    static Path getBasePath() {
+        try {
+            return Paths.get(TestUtils.class.getResource("/").toURI());
+        } catch (URISyntaxException e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    static String getBabelPath()
-    {
-        return TestUtils.class.getResource("/babel.min.js").getPath();
+    static Path getBabelPath() {
+        try {
+            return Paths.get(TestUtils.class.getResource("/babel-6.26.0.min.js").toURI());
+        } catch (URISyntaxException e) {
+            throw new RuntimeException(e);
+        }
     }
+
+    static String getResourceAsString(String resource) {
+        return getResourceAsString(TestUtils.class, resource);
+    }
+
+    static String getResourceAsString(Class<TestUtils> aClass, String resource) {
+        return new BufferedReader(new InputStreamReader(
+                aClass.getResourceAsStream(resource)))
+                .lines()
+                .collect(Collectors.joining("\n"));
+    }
+
 }

@@ -25,6 +25,14 @@
             </roles>
             <timezone>Europe/Warsaw</timezone>
         </developer>
+        <developer>
+            <name>Jonas Koperdraat</name>
+            <url>http://jonaskoperdraat.nl</url>
+            <roles>
+                <role>Developer</role>
+            </roles>
+            <timezone>Europe/Amsterdam</timezone>
+        </developer>
     </developers>
 
     <prerequisites>
@@ -70,6 +78,11 @@
             <artifactId>mockito-core</artifactId>
             <version>2.21.0</version>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.18.8</version>
         </dependency>
     </dependencies>
 
