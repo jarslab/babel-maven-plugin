@@ -1,5 +1,6 @@
-package com.jarslab.maven.babel.plugin;
+package com.jarslab.maven.babel.plugin.transpiler;
 
+import com.jarslab.maven.babel.plugin.TestUtils;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.plugin.logging.SystemStreamLog;
 import org.junit.Rule;
@@ -22,7 +23,7 @@ public class BabelTranspilerTest {
 
     private Log log = new SystemStreamLog();
 
-    private BabelTranspiler.BabelTranspilerBuilder babelTranspilerBuilder = BabelTranspiler.builder()
+    private TranspilationContext.TranspilationContextBuilder contextBuilder = TranspilationContext.builder()
             .verbose(true)
             .log(log)
             .babelSource(TestUtils.getBabelPath().toFile())
@@ -32,36 +33,30 @@ public class BabelTranspilerTest {
     @Test
     public void shouldTranspileEs6File() {
         // Given
-        TranspileContext context = TranspileContext.builder()
+        Transpilation transpilation = Transpilation.builder()
                 .source(TestUtils.getBasePath().resolve(Paths.get("src", "a", "test-es6.js")))
-                .build();
-
-        BabelTranspiler babelTranspiler = babelTranspilerBuilder
-                .presets("'es2015'")
+                .context(contextBuilder.presets("'es2015'").build())
                 .build();
 
         // When
-        context = babelTranspiler.execute(context);
+        transpilation = new BabelTranspiler().execute(transpilation);
 
         // Then
-        assertThat(context.getResult(), is(TestUtils.getResourceAsString("/trans/a/trans-test-es6.js")));
+        assertThat(transpilation.getResult(), is(TestUtils.getResourceAsString("/trans/a/trans-test-es6.js")));
     }
 
     @Test
     public void shouldTranspileReactFile() {
         // Given
-        TranspileContext context = TranspileContext.builder()
+        Transpilation transpilation = Transpilation.builder()
                 .source(TestUtils.getBasePath().resolve(Paths.get("src", "a", "test-react.js")))
+                .context(contextBuilder.presets("'react'").build())
                 .build();
 
-        BabelTranspiler babelTranspiler = babelTranspilerBuilder
-                .presets("'react'")
-                .build();
-
-        context = babelTranspiler.execute(context);
+        transpilation = new BabelTranspiler().execute(transpilation);
 
         // Then
-        assertThat(context.getResult(), is(TestUtils.getResourceAsString("/trans/a/trans-test-react.js")));
+        assertThat(transpilation.getResult(), is(TestUtils.getResourceAsString("/trans/a/trans-test-react.js")));
     }
 
 }

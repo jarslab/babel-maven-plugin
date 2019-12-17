@@ -1,7 +1,15 @@
 package com.jarslab.maven.babel.plugin;
 
+import com.jarslab.maven.babel.plugin.transpiler.BabelTranspilerFactory;
+import com.jarslab.maven.babel.plugin.transpiler.BabelTranspilerStrategy;
+import com.jarslab.maven.babel.plugin.transpiler.Transpilation;
+import com.jarslab.maven.babel.plugin.transpiler.TranspileStrategy;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+import lombok.Singular;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -13,36 +21,56 @@ import java.io.File;
 import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static java.lang.String.format;
 
 @Mojo(name = "babel", defaultPhase = LifecyclePhase.PROCESS_RESOURCES, threadSafe = true)
 @Data
+@Builder
 @EqualsAndHashCode(callSuper = true)
+@NoArgsConstructor
+@AllArgsConstructor
 public class BabelMojo extends AbstractMojo {
 
+    @Builder.Default
     @Parameter(property = "verbose", defaultValue = "false")
     private boolean verbose = false;
+
+    @Builder.Default
     @Parameter(property = "parallel", defaultValue = "true")
     private boolean parallel = true;
+
+    @Parameter(property = "transpileStrategy", alias = "strategy")
+    private TranspileStrategy transpileStrategy;
+
     @Parameter(property = "babelSrc", required = true)
     private File babelSrc;
+
     @Parameter(property = "sourceDir", required = true)
     private File sourceDir;
+
     @Parameter(property = "targetDir", required = true)
     private File targetDir;
+
+    @Singular
     @Parameter(property = "jsSourceFiles", alias = "jsFiles")
     private List<String> jsSourceFiles;
+
+    @Singular
     @Parameter(property = "jsSourceIncludes", alias = "jsIncludes")
     private List<String> jsSourceIncludes;
+
+    @Singular
     @Parameter(property = "jsSourceExcludes", alias = "jsExcludes")
     private List<String> jsSourceExcludes;
+
     @Parameter(property = "prefix")
     private String prefix;
+
     @Parameter(property = "presets", defaultValue = "es2015")
     private String presets;
+
+    @Builder.Default
     @Parameter(property = "encoding")
     private String encoding = Charset.defaultCharset().name();
 
@@ -66,16 +94,13 @@ public class BabelMojo extends AbstractMojo {
             return;
         }
 
-        final TranspilationInitializer transpilationInitializer = TranspilationInitializer.builder()
-                .sourceDirectory(sourceDir.toPath())
-                .targetDirectory(targetDir.toPath())
-                .prefix(prefix)
-                .files(jsSourceFiles)
-                .includes(jsSourceIncludes)
-                .excludes(jsSourceExcludes)
-                .build();
+        if (transpileStrategy == null) {
+            transpileStrategy = parallel ? TranspileStrategy.PARALLEL : TranspileStrategy.SEQUENTIAL;
+        }
 
-        final Set<TranspileContext> transpilations = transpilationInitializer.getTranspilations();
+        final TranspilationInitializer transpilationInitializer = new TranspilationInitializer(this);
+
+        final Set<Transpilation> transpilations = transpilationInitializer.getTranspilations();
 
         if (transpilations.isEmpty()) {
             getLog().info("No files found to transpile.");
@@ -86,31 +111,15 @@ public class BabelMojo extends AbstractMojo {
             getLog().info(format("Found %s files to transpile.", transpilations.size()));
         }
 
-        final TargetFileWriter targetFileWriter = new TargetFileWriter(charset, getLog());
-
-        BabelTranspiler transpiler = BabelTranspiler.builder()
-                .verbose(verbose)
-                .log(getLog())
-                .babelSource(babelSrc)
-                .presets(getFormattedPresets(presets))
-                .charset(charset)
-                .build();
+        BabelTranspilerStrategy transpiler = BabelTranspilerFactory.getTranspiler(transpileStrategy);
 
         try {
-            transpilations.parallelStream()
-                    .map(transpiler::execute)
-                    .forEach(targetFileWriter::writeTargetFile);
+            transpiler.execute(transpilations)
+                    .forEach(TargetFileWriter::writeTargetFile);
         } catch (Exception e) {
             throw new MojoExecutionException("Failed on Babel transpile execution.", e);
         }
         getLog().info("Babel transpile execution successful.");
-    }
-
-    private String getFormattedPresets(final String presets) {
-        return Stream.of(presets.split(","))
-                .map(String::trim)
-                .map(preset -> format("'%s'", preset))
-                .collect(Collectors.joining(","));
     }
 
 }

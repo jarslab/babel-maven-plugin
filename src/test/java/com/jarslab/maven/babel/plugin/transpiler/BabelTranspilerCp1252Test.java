@@ -1,5 +1,6 @@
-package com.jarslab.maven.babel.plugin;
+package com.jarslab.maven.babel.plugin.transpiler;
 
+import com.jarslab.maven.babel.plugin.TestUtils;
 import org.apache.maven.plugin.logging.Log;
 import org.junit.BeforeClass;
 import org.junit.Rule;
@@ -47,22 +48,21 @@ public class BabelTranspilerCp1252Test {
                 Files.readAllLines(TestUtils.getBasePath().resolve("src/a/test-react.js")),
                 Charset.forName("UTF-8"));
 
-        BabelTranspiler babelTranspiler = BabelTranspiler.builder()
-                .log(log)
-                .babelSource(TestUtils.getBabelPath().toFile())
-                .presets("'react'")
-                .charset(Charset.forName("UTF-8"))
-                .build();
-
-        TranspileContext context = TranspileContext.builder()
+        Transpilation transpilation = Transpilation.builder()
                 .source(sourceFilePath)
+                .context(TranspilationContext.builder()
+                        .log(log)
+                        .babelSource(TestUtils.getBabelPath().toFile())
+                        .presets("'react'")
+                        .charset(Charset.forName("UTF-8"))
+                        .build())
                 .build();
 
         // When
-        context = babelTranspiler.execute(context);
+        transpilation = new BabelTranspiler().execute(transpilation);
 
         // Then
-        assertThat(context.getResult(), containsString("createElement"));
+        assertThat(transpilation.getResult(), containsString("createElement"));
     }
 
 }

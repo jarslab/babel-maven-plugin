@@ -1,5 +1,6 @@
 package com.jarslab.maven.babel.plugin;
 
+import com.jarslab.maven.babel.plugin.transpiler.Transpilation;
 import lombok.RequiredArgsConstructor;
 import org.apache.maven.plugin.logging.Log;
 
@@ -11,15 +12,15 @@ import java.nio.file.Files;
 @RequiredArgsConstructor
 class TargetFileWriter
 {
-    private final Charset charset;
-    private final Log log;
 
-    void writeTargetFile(TranspileContext context)
+    static void writeTargetFile(Transpilation transpilation)
     {
+        Log log = transpilation.getContext().getLog();
+        Charset charset = transpilation.getContext().getCharset();
         try {
-            log.debug(String.format("writing to %s", context.getTarget()));
-            Files.createDirectories(context.getTarget().getParent());
-            Files.write(context.getTarget(), context.getResult().getBytes(charset));
+            log.debug(String.format("writing to %s", transpilation.getTarget()));
+            Files.createDirectories(transpilation.getTarget().getParent());
+            Files.write(transpilation.getTarget(), transpilation.getResult().getBytes(charset));
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }

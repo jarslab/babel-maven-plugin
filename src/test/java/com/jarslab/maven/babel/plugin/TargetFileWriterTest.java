@@ -1,5 +1,7 @@
 package com.jarslab.maven.babel.plugin;
 
+import com.jarslab.maven.babel.plugin.transpiler.Transpilation;
+import com.jarslab.maven.babel.plugin.transpiler.TranspilationContext;
 import org.apache.maven.plugin.logging.Log;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -25,14 +27,16 @@ public class TargetFileWriterTest {
     @Test
     public void shouldWriteFile() throws Exception {
         // Given
-        TargetFileWriter targetFileWriter = new TargetFileWriter(Charset.defaultCharset(), log);
-        TranspileContext transpileContext = TranspileContext.builder()
+        Transpilation transpileContext = Transpilation.builder()
                 .target(TMP_DIRECTORY.resolve(Paths.get("src", "test.js")))
                 .result(TEST_INPUT)
+                .context(TranspilationContext.builder()
+                        .charset(Charset.forName("UTF-8"))
+                        .log(log).build())
                 .build();
 
         // When
-        targetFileWriter.writeTargetFile(transpileContext);
+        TargetFileWriter.writeTargetFile(transpileContext);
 
         // Then
         byte[] bytes = Files.readAllBytes(TMP_DIRECTORY.resolve(Paths.get("src", "test.js")));

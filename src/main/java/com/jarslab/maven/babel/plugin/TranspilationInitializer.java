@@ -1,81 +1,90 @@
 package com.jarslab.maven.babel.plugin;
 
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Singular;
+import com.jarslab.maven.babel.plugin.transpiler.Transpilation;
+import com.jarslab.maven.babel.plugin.transpiler.TranspilationContext;
+import lombok.RequiredArgsConstructor;
 import org.codehaus.plexus.util.DirectoryScanner;
 
 import java.io.File;
+import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-@Builder
+import static java.lang.String.format;
+
+@RequiredArgsConstructor
 class TranspilationInitializer {
 
-    @NonNull
-    private Path sourceDirectory;
+    private final BabelMojo babelMojo;
 
-    @NonNull
-    private Path targetDirectory;
+    Set<Transpilation> getTranspilations() {
+        final Set<Transpilation> transpilations = new HashSet<>();
 
-    @SuppressWarnings("UnusedAssignment")
-    @Builder.Default
-    private String prefix = "";
+        TranspilationContext context = TranspilationContext.builder()
+                .babelSource(babelMojo.getBabelSrc())
+                .charset(Charset.forName(babelMojo.getEncoding()))
+                .log(babelMojo.getLog())
+                .verbose(babelMojo.isVerbose())
+                .presets(getFormattedPresets(babelMojo))
+                .build();
 
-    @Singular("file")
-    private List<String> files;
+        addStaticFiles(transpilations);
+        addPatternMatchedFiles(transpilations);
 
-    @Singular("include")
-    private List<String> includes;
+        transpilations.forEach(t -> t.setContext(context));
 
-    @Singular("exclude")
-    private List<String> excludes;
-
-    Set<TranspileContext> getTranspilations() {
-        final Set<TranspileContext> sourceFiles = new HashSet<>();
-
-        addStaticFiles(sourceFiles);
-        addPatternMatchedFiles(sourceFiles);
-
-        return sourceFiles;
+        return transpilations;
     }
 
-    private void addStaticFiles(Set<TranspileContext> sourceFiles) {
+    private void addStaticFiles(Set<Transpilation> sourceFiles) {
         // Add statically added files
-        files.stream()
+        babelMojo.getJsSourceFiles().stream()
                 .map(this::removeLeadingSlash)
-                .map(sourceDirectory::resolve)
+                .map(this::resolveAgainstSourceDirectory)
                 .filter(p -> p.toFile().exists())
-                .map(this::toTranspileContext)
+                .map(this::toTranspilation)
                 .forEach(sourceFiles::add);
     }
 
-    private void addPatternMatchedFiles(Set<TranspileContext> sourceFiles) {
+    private Path resolveAgainstSourceDirectory(String s) {
+        return babelMojo.getSourceDir().toPath().resolve(s);
+    }
+
+    private void addPatternMatchedFiles(Set<Transpilation> sourceFiles) {
         // Add pattern matched files
-        if (!includes.isEmpty()) {
+        if (!babelMojo.getJsSourceIncludes().isEmpty()) {
             Stream.of(getIncludesDirectoryScanner().getIncludedFiles())
-                    .map(sourceDirectory::resolve)
-                    .map(this::toTranspileContext)
+                    .map(this::resolveAgainstSourceDirectory)
+                    .map(this::toTranspilation)
                     .forEach(sourceFiles::add);
         }
     }
 
-    private TranspileContext toTranspileContext(Path sourceFile) {
-        return TranspileContext.builder()
+    private Transpilation toTranspilation(Path sourceFile) {
+        return Transpilation.builder()
                 .source(sourceFile)
                 .target(determineTargetPath(sourceFile))
                 .build();
     }
 
-    private Path determineTargetPath(Path sourceFile) {
-        Path relativePath = getRelativePath(sourceFile);
-        return targetDirectory.resolve(relativePath).resolve(prefix + sourceFile.getFileName());
+    private String getFormattedPresets(final BabelMojo mojo) {
+        return Stream.of(mojo.getPresets().split(","))
+                .map(String::trim)
+                .map(preset -> format("'%s'", preset))
+                .collect(Collectors.joining(","));
     }
 
+
+    private Path determineTargetPath(Path sourceFile) {
+        Path relativePath = getRelativePath(sourceFile);
+        String prefix = babelMojo.getPrefix() == null ? "" : babelMojo.getPrefix();
+        return babelMojo.getTargetDir().toPath().resolve(relativePath).resolve(prefix + sourceFile.getFileName());
+    }
 
     private String removeLeadingSlash(String subject) {
         if (subject.startsWith(File.separator) || subject.startsWith("/")) {
@@ -87,10 +96,10 @@ class TranspilationInitializer {
     private DirectoryScanner getIncludesDirectoryScanner() {
         DirectoryScanner scanner = new DirectoryScanner();
 
-        scanner.setIncludes(checkFileSeparator(this.includes));
-        scanner.setExcludes(checkFileSeparator(this.excludes));
+        scanner.setIncludes(checkFileSeparator(babelMojo.getJsSourceIncludes()));
+        scanner.setExcludes(checkFileSeparator(babelMojo.getJsSourceExcludes()));
         scanner.addDefaultExcludes();
-        scanner.setBasedir(sourceDirectory.toFile());
+        scanner.setBasedir(babelMojo.getSourceDir());
         scanner.scan();
         return scanner;
     }
@@ -114,7 +123,7 @@ class TranspilationInitializer {
 
     private Path getRelativePath(Path sourceFile) {
         return Paths.get(
-                sourceDirectory.toFile()
+                babelMojo.getSourceDir()
                         .toURI()
                         .relativize(sourceFile.getParent()
                                 .toFile()
