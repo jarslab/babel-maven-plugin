@@ -3,7 +3,7 @@
 
     <groupId>com.jarslab.maven</groupId>
     <artifactId>babel-maven-plugin-example</artifactId>
-    <version>1.3-SNAPSHOT</version>
+    <version>1.4-SNAPSHOT</version>
     <name>Babel Maven Plugin Example</name>
     <url>https://github.com/jarslab/babel-maven-plugin</url>
     <licenses>
@@ -36,8 +36,6 @@
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
-        <maven.api.version>3.0</maven.api.version>
-        <maven.plugin.version>3.6.0</maven.plugin.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
@@ -56,7 +54,7 @@
                         </goals>
                         <configuration>
                             <verbose>true</verbose>
-                            <strategy>SEQUENTIAL</strategy>
+                            <threads>3</threads>
                             <encoding>${project.build.sourceEncoding}</encoding>
                             <babelSrc>${project.basedir}/src/main/resources/babel-6.26.0.min.js</babelSrc>
                             <sourceDir>${project.basedir}/src/main/resources/js</sourceDir>

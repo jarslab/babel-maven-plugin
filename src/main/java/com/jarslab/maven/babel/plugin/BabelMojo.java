@@ -36,12 +36,17 @@ public class BabelMojo extends AbstractMojo {
     @Parameter(property = "verbose", defaultValue = "false")
     private boolean verbose = false;
 
-    @Builder.Default
-    @Parameter(property = "parallel", defaultValue = "true")
-    private boolean parallel = true;
+    /**
+     * @deprecated in favor of {@link #threads}
+     */
+    @SuppressWarnings("DeprecatedIsStillUsed") // Still in use for backwards compatibility
+    @Parameter(property = "parallel", defaultValue = "false")
+    @Deprecated
+    private boolean parallel = false;
 
-    @Parameter(property = "transpileStrategy", alias = "strategy")
-    private TranspileStrategy transpileStrategy;
+    @Builder.Default
+    @Parameter(property = "threads", defaultValue = "1")
+    private int threads = 1;
 
     @Parameter(property = "babelSrc", required = true)
     private File babelSrc;
@@ -94,9 +99,13 @@ public class BabelMojo extends AbstractMojo {
             return;
         }
 
-        if (transpileStrategy == null) {
-            transpileStrategy = parallel ? TranspileStrategy.PARALLEL : TranspileStrategy.SEQUENTIAL;
+        // For backwards compatibility, if parallel is set to true, and #threads has the default value, set the number of threads to 2
+        //noinspection deprecation
+        if(threads == 1 && parallel) {
+            threads = 2;
         }
+
+        TranspileStrategy transpileStrategy = threads > 1 ? TranspileStrategy.PARALLEL : TranspileStrategy.SEQUENTIAL;
 
         final TranspilationInitializer transpilationInitializer = new TranspilationInitializer(this);
 
@@ -111,7 +120,7 @@ public class BabelMojo extends AbstractMojo {
             getLog().info(format("Found %s files to transpile.", transpilations.size()));
         }
 
-        BabelTranspilerStrategy transpiler = BabelTranspilerFactory.getTranspiler(transpileStrategy);
+        BabelTranspilerStrategy transpiler = BabelTranspilerFactory.getTranspiler(transpileStrategy, this);
 
         try {
             transpiler.execute(transpilations)

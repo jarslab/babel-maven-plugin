@@ -15,11 +15,8 @@ It requires no npm or node.js, it is plain Java project which works perfectly co
 
 ## Settings, ie buttons and knobs
 * **`verbose`** - no surprises, the execution becomes a bit more talkative (default: _false_),
-* **`strategy`** - Can be either `PARALLEL`, `SEQUENTIAL`, or `MIXED`, determining the parallelism whilst transpiling (default 'SEQUENTIAL'. For backwards compatibility, if ~~**`parallel`**~~ is set to true, **`strategy`** defaults to `PARALLEL`):
-   * `SEQUENTIAL` - Initializes a single `ScriptEngine` and sequentially transpiles each source file, using that same engine. Because initializing the `ScriptEngine` is quite an expensive operation compared to transpiling the source files, this option is probably most suitable for transpiling lots of small files.
-   * `PARALLEL` - transpiles all sources files using a parallel stream. This goes throught he source files, initializes a ScriptEngine for each of them and using that Enginge to transpile the file. This is a naive approach to parallelism, and as such probably not suitable for most projects.
-   * `MIXED` - an alternative to the `PARALLEL` strategy, in which a pool of workes is created, which run in parallel, each creating a `ScriptEngine` and using that to sequentially proces as many source files as it can put it's hands on. This strategy is most suitable for transpiling lots of large files, as the cost of initializing those engines weighs up to the benefit of transpiling in parallel.
-* ~~**`parallel`** - if true will run files transpilation in parallel (on ForkJoin pool) (default: _true_),~~ **deprecated** in favor of **`transpileStrategy`**. When 
+* ~~**`parallel`** - if true will run files transpilation in parallel (on ForkJoin pool) (default: _false_)~~ **deprecated** in favor of **`threads`**.
+* **`threads`** - number of threads to use when transpiling (default: _1_, will be capped on the amount of processors available)
 * **`encoding`** - will apply chosen encoding during files operations (read/write) (default: `Charset.defaultCharset()`),
 * **`babelSrc`** - readable path to standalone(!) Babel sources. It can be provided from WebJars dependency, minified 
 or development version,
