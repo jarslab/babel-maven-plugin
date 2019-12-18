@@ -1,5 +1,7 @@
 package com.jarslab.maven.babel.plugin;
 
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -9,26 +11,28 @@ import org.apache.maven.plugins.annotations.Parameter;
 
 import java.io.File;
 import java.nio.charset.Charset;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static java.lang.String.format;
+
 @Mojo(name = "babel", defaultPhase = LifecyclePhase.PROCESS_RESOURCES, threadSafe = true)
-public class BabelMojo extends AbstractMojo
-{
+@Data
+@EqualsAndHashCode(callSuper = true)
+public class BabelMojo extends AbstractMojo {
+
     @Parameter(property = "verbose", defaultValue = "false")
     private boolean verbose = false;
     @Parameter(property = "parallel", defaultValue = "true")
     private boolean parallel = true;
     @Parameter(property = "babelSrc", required = true)
-    private String babelSrc;
+    private File babelSrc;
     @Parameter(property = "sourceDir", required = true)
-    private String sourceDir;
+    private File sourceDir;
     @Parameter(property = "targetDir", required = true)
-    private String targetDir;
+    private File targetDir;
     @Parameter(property = "jsSourceFiles", alias = "jsFiles")
     private List<String> jsSourceFiles;
     @Parameter(property = "jsSourceIncludes", alias = "jsIncludes")
@@ -43,15 +47,14 @@ public class BabelMojo extends AbstractMojo
     private String encoding = Charset.defaultCharset().name();
 
     @Override
-    public void execute() throws MojoExecutionException, MojoFailureException
-    {
+    public void execute() throws MojoExecutionException, MojoFailureException {
         final Charset charset = Charset.forName(encoding);
         if (verbose) {
             getLog().info("Run in the verbose mode.");
             getLog().info(String.format("Charset: %s.", charset));
+            getLog().debug(this.toString());
         }
-        final File babelSrcFile = Paths.get(babelSrc).toFile();
-        if (!babelSrcFile.exists() || !babelSrcFile.canRead()) {
+        if (!babelSrc.exists() || !babelSrc.canRead()) {
             getLog().error("Given Babel file is not reachable.");
             throw new MojoFailureException("Given Babel file is not reachable.");
         }
@@ -63,100 +66,51 @@ public class BabelMojo extends AbstractMojo
             return;
         }
 
-        final SourceFilesExtractor sourceFilesExtractor = new SourceFilesExtractor(
-                sourceDir, jsSourceFiles, jsSourceIncludes, jsSourceExcludes);
-        final TargetFileWriter targetFileWriter = new TargetFileWriter(sourceDir, targetDir, prefix, charset);
-        final String formattedPresets = getFormattedPresets(presets);
-        final Set<Path> sourceFiles = sourceFilesExtractor.getSourceFiles();
-        if (verbose) {
-            getLog().info(String.format("Found %s files to transpile.", sourceFiles.size()));
+        final TranspilationInitializer transpilationInitializer = TranspilationInitializer.builder()
+                .sourceDirectory(sourceDir.toPath())
+                .targetDirectory(targetDir.toPath())
+                .prefix(prefix)
+                .files(jsSourceFiles)
+                .includes(jsSourceIncludes)
+                .excludes(jsSourceExcludes)
+                .build();
+
+        final Set<TranspileContext> transpilations = transpilationInitializer.getTranspilations();
+
+        if (transpilations.isEmpty()) {
+            getLog().info("No files found to transpile.");
+            return;
         }
+
+        if (verbose) {
+            getLog().info(format("Found %s files to transpile.", transpilations.size()));
+        }
+
+        final TargetFileWriter targetFileWriter = new TargetFileWriter(charset, getLog());
+
+        BabelTranspiler transpiler = BabelTranspiler.builder()
+                .verbose(verbose)
+                .log(getLog())
+                .babelSource(babelSrc)
+                .presets(getFormattedPresets(presets))
+                .charset(charset)
+                .build();
+
         try {
-            final Stream<BabelTranspiler> transpilers = sourceFiles.stream()
-                    .map(sourceFile -> new BabelTranspiler(
-                            verbose,
-                            getLog(),
-                            targetFileWriter,
-                            babelSrcFile,
-                            sourceFile,
-                            formattedPresets,
-                            charset));
-            if (parallel) {
-                getLog().info("Run in parallel mode.");
-                transpilers.parallel();
-            }
-            transpilers
-                    .peek(this::logExtractedFile)
-                    .forEach(BabelTranspiler::execute);
+            transpilations.parallelStream()
+                    .map(transpiler::execute)
+                    .forEach(targetFileWriter::writeTargetFile);
         } catch (Exception e) {
             throw new MojoExecutionException("Failed on Babel transpile execution.", e);
         }
         getLog().info("Babel transpile execution successful.");
     }
 
-    private String getFormattedPresets(final String presets)
-    {
+    private String getFormattedPresets(final String presets) {
         return Stream.of(presets.split(","))
                 .map(String::trim)
-                .map(preset -> String.format("'%s'", preset))
+                .map(preset -> format("'%s'", preset))
                 .collect(Collectors.joining(","));
     }
 
-    private void logExtractedFile(final BabelTranspiler babelTranspiler)
-    {
-        if (verbose) {
-            getLog().info(String.format("About to transpile: `%s`.",
-                    babelTranspiler.getSourceFilePath()));
-        }
-    }
-
-    void setVerbose(final boolean verbose)
-    {
-        this.verbose = verbose;
-    }
-
-    public void setParallel(final boolean parallel)
-    {
-        this.parallel = parallel;
-    }
-
-    void setBabelSrc(final String babelSrc)
-    {
-        this.babelSrc = babelSrc;
-    }
-
-    void setSourceDir(final String sourceDir)
-    {
-        this.sourceDir = sourceDir;
-    }
-
-    void setTargetDir(final String targetDir)
-    {
-        this.targetDir = targetDir;
-    }
-
-    void setJsSourceFiles(final List<String> jsSourceFiles)
-    {
-        this.jsSourceFiles = jsSourceFiles;
-    }
-
-    void setJsSourceIncludes(final List<String> jsSourceIncludes)
-    {
-        this.jsSourceIncludes = jsSourceIncludes;
-    }
-
-    void setJsSourceExcludes(final List<String> jsSourceExcludes)
-    {
-        this.jsSourceExcludes = jsSourceExcludes;
-    }
-
-    void setPrefix(final String prefix)
-    {
-        this.prefix = prefix;
-    }
-
-    void setPresets(final String presets)
-    {
-        this.presets = presets;
-    }
 }

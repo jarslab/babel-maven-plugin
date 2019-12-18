@@ -1,0 +1,85 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.jarslab.maven</groupId>
+    <artifactId>babel-maven-plugin-example</artifactId>
+    <version>1.3-SNAPSHOT</version>
+    <name>Babel Maven Plugin Example</name>
+    <url>https://github.com/jarslab/babel-maven-plugin</url>
+    <licenses>
+        <license>
+            <name>MIT License</name>
+            <url>http://www.opensource.org/licenses/mit-license.php</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+    <developers>
+        <developer>
+            <name>Milosz Polak</name>
+            <url>http://jarslab.com</url>
+            <roles>
+                <role>Project owner</role>
+                <role>Developer</role>
+            </roles>
+            <timezone>Europe/Warsaw</timezone>
+        </developer>
+        <developer>
+            <name>Jonas Koperdraat</name>
+            <url>http://jonaskoperdraat.nl</url>
+            <roles>
+                <role>Developer</role>
+            </roles>
+            <timezone>Europe/Amsterdam</timezone>
+        </developer>
+    </developers>
+
+    <prerequisites>
+        <maven>${maven.api.version}</maven>
+    </prerequisites>
+
+    <properties>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
+        <maven.api.version>3.0</maven.api.version>
+        <maven.plugin.version>3.6.0</maven.plugin.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>com.jarslab.maven</groupId>
+                <artifactId>babel-maven-plugin</artifactId>
+                <version>1.3-SNAPSHOT</version>
+                <executions>
+                    <execution>
+                        <id>js-transpile</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>babel</goal>
+                        </goals>
+                        <configuration>
+                            <verbose>true</verbose>
+                            <encoding>${project.build.sourceEncoding}</encoding>
+                            <babelSrc>${project.basedir}/src/main/resources/babel-6.26.0.min.js</babelSrc>
+                            <sourceDir>${project.basedir}/src/main/resources/js</sourceDir>
+                            <targetDir>${project.basedir}/target/classes/assets</targetDir>
+                            <jsFiles>
+                                <jsFile>a/file-2.js</jsFile>
+                            </jsFiles>
+                            <jsExcludes>
+                                <jsExclude>a/*</jsExclude>
+                            </jsExcludes>
+                            <jsIncludes>
+                                <jsInclude>**/*.js</jsInclude>
+                            </jsIncludes>
+                            <prefix>trans-</prefix>
+                            <presets>react,es2015</presets>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>

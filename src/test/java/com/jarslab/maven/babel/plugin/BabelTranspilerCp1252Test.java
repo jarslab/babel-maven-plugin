@@ -10,16 +10,12 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.io.File;
-import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 
-import static org.mockito.ArgumentMatchers.argThat;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  * This test is broken by design.
@@ -27,45 +23,46 @@ import static org.mockito.Mockito.verify;
  * Due to runtime caches System::setProperty will not work as expected.
  */
 @RunWith(MockitoJUnitRunner.class)
-public class BabelTranspilerCp1252Test
-{
+public class BabelTranspilerCp1252Test {
+
     @Rule
     public ExpectedException expectedException = ExpectedException.none();
 
     @Mock
-    private TargetFileWriter targetFileWriter;
-    @Mock
     private Log log;
 
     @BeforeClass
-    public static void setUpClass()
-    {
+    public static void setUpClass() {
         System.setProperty("file.encoding", "Cp1252");
     }
 
     @Test
-    public void shouldTranspileCp1252Encoding() throws IOException
-    {
-        //given
-        final File sourceFile = File.createTempFile("babel-test", "");
-        final Path sourceFilePath = sourceFile.toPath();
+    public void shouldTranspileCp1252Encoding() throws Exception {
+        // Given
+        File sourceFile = File.createTempFile("babel-test", "");
+        Path sourceFilePath = sourceFile.toPath();
         sourceFile.deleteOnExit();
         Files.write(
                 sourceFilePath,
-                Files.readAllLines((Paths.get(TestUtils.getBasePath(), "/src/a/test-react.js"))),
+                Files.readAllLines(TestUtils.getBasePath().resolve("src/a/test-react.js")),
                 Charset.forName("UTF-8"));
-        final BabelTranspiler babelTranspiler = new BabelTranspiler(
-                false, log, targetFileWriter,
-                Paths.get(TestUtils.getBabelPath()).toFile(),
-                sourceFilePath,
-                "'react'",
-                Charset.forName("UTF-8"));
-        //when
-        babelTranspiler.execute();
-        //then
-        verify(targetFileWriter, times(1))
-                .writeTargetFile(
-                        eq(sourceFilePath),
-                        argThat(arg -> arg.contains("createElement")));
+
+        BabelTranspiler babelTranspiler = BabelTranspiler.builder()
+                .log(log)
+                .babelSource(TestUtils.getBabelPath().toFile())
+                .presets("'react'")
+                .charset(Charset.forName("UTF-8"))
+                .build();
+
+        TranspileContext context = TranspileContext.builder()
+                .source(sourceFilePath)
+                .build();
+
+        // When
+        context = babelTranspiler.execute(context);
+
+        // Then
+        assertThat(context.getResult(), containsString("createElement"));
     }
+
 }
