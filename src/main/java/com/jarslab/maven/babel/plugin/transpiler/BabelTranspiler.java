@@ -12,6 +12,7 @@ import java.io.InputStreamReader;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import static java.lang.String.format;
 
@@ -56,7 +57,7 @@ public class BabelTranspiler {
             log.info(format("Transpiling %s -> %s", transpilation.getSource(), transpilation.getTarget()));
         }
         try {
-            final String source = new String(Files.readAllBytes(transpilation.getSource()), this.context.getCharset());
+            final String source = Files.lines(transpilation.getSource(), this.context.getCharset()).collect(Collectors.joining("\n"));
             simpleBindings.put(INPUT_VARIABLE, source);
             final String result = (String) engine.eval(
                     format(BABEL_EXECUTE, INPUT_VARIABLE, context.getPresets()), simpleBindings);

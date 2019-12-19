@@ -69,7 +69,7 @@ public class BabelMojo extends AbstractMojo {
         if (verbose) {
             getLog().info("Run in the verbose mode.");
             getLog().info(String.format("Charset: %s.", charset));
-            getLog().debug(this.toString());
+            getLog().debug(toString());
         }
         if (!babelSrc.exists() || !babelSrc.canRead()) {
             getLog().error("Given Babel file is not reachable.");
