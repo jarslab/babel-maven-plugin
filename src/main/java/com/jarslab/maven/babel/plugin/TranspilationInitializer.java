@@ -2,7 +2,6 @@ package com.jarslab.maven.babel.plugin;
 
 import com.jarslab.maven.babel.plugin.transpiler.Transpilation;
 import com.jarslab.maven.babel.plugin.transpiler.TranspilationContext;
-import lombok.RequiredArgsConstructor;
 import org.codehaus.plexus.util.DirectoryScanner;
 
 import java.io.File;
@@ -17,10 +16,13 @@ import java.util.stream.Stream;
 
 import static java.lang.String.format;
 
-@RequiredArgsConstructor
 class TranspilationInitializer {
 
     private final BabelMojo babelMojo;
+
+    TranspilationInitializer(BabelMojo babelMojo) {
+        this.babelMojo = babelMojo;
+    }
 
     Set<Transpilation> getTranspilations() {
         final Set<Transpilation> transpilations = new HashSet<>();

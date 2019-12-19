@@ -18,61 +18,69 @@ public class BabelMojoTest {
 
     @Test
     public void shouldFailForNotExistedBabelPath() throws MojoFailureException, MojoExecutionException {
-        //given
+        // Given
         final BabelMojo babelMojo = getBabelMojo();
         babelMojo.setBabelSrc(TestUtils.getBasePath().resolve("bagel.min.js").toFile());
-        //expect
+
+        // Expect
         expectedException.expect(MojoFailureException.class);
-        //when
+
+        // When
         babelMojo.execute();
     }
 
     @Test
     public void shouldFailForNoPresets() throws MojoFailureException, MojoExecutionException {
-        //given
+        // Given
         final BabelMojo babelMojo = getBabelMojo();
         babelMojo.setPresets("");
-        //expect
+
+        // Expect
         expectedException.expect(MojoFailureException.class);
-        //when
+
+        // When
         babelMojo.execute();
     }
 
     @Test
     public void shouldDoNothingForMissingSourceFiles() throws MojoFailureException, MojoExecutionException {
-        //given
+        // Given
         final BabelMojo babelMojo = getBabelMojo();
         babelMojo.setJsSourceFiles(Collections.emptyList());
         babelMojo.setJsSourceIncludes(Collections.emptyList());
-        //when
+
+        // When
         babelMojo.execute();
-        //then
-        //pass
+
+        // Then
+        // Pass
     }
 
     @Test
     public void shouldRunCompleteExecution() throws MojoFailureException, MojoExecutionException {
-        //given
+        // Given
         final BabelMojo babelMojo = getBabelMojo();
-        //when
+
+        // When
         babelMojo.execute();
-        //then
+
+        // Then
         assertThat(Paths.get(System.getProperty("java.io.tmpdir")).resolve(Paths.get("src", "a"))).exists();
     }
 
     private BabelMojo getBabelMojo() {
-        return BabelMojo.builder()
-                .verbose(true)
-                .babelSrc(TestUtils.getBabelPath().toFile())
-                .sourceDir(TestUtils.getBasePath().toFile())
-                .targetDir(Paths.get(System.getProperty("java.io.tmpdir")).toFile())
-                .jsSourceFile("/src/test.js")
-                .jsSourceInclude("/src/a/*.js")
-                .jsSourceExclude("/src/a/*react.js")
-                .prefix("t.")
-                .presets("es2015,react")
-                .encoding("UTF-8")
-                .build();
+        BabelMojo babelMojo = new BabelMojo();
+        babelMojo.setVerbose(true);
+        babelMojo.setBabelSrc(TestUtils.getBabelPath().toFile());
+        babelMojo.setSourceDir(TestUtils.getBasePath().toFile());
+        babelMojo.setTargetDir(Paths.get(System.getProperty("java.io.tmpdir")).toFile());
+        babelMojo.setJsSourceFile("/src/test.js");
+        babelMojo.setJsSourceInclude("/src/a/*.js");
+        babelMojo.setJsSourceExclude("/src/a/*react.js");
+        babelMojo.setPrefix("t.");
+        babelMojo.setPresets("es2015,react");
+        babelMojo.setEncoding("UTF-8");
+        return babelMojo;
     }
 
 }

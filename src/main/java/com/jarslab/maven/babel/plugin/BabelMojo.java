@@ -4,12 +4,6 @@ import com.jarslab.maven.babel.plugin.transpiler.BabelTranspilerFactory;
 import com.jarslab.maven.babel.plugin.transpiler.BabelTranspilerStrategy;
 import com.jarslab.maven.babel.plugin.transpiler.Transpilation;
 import com.jarslab.maven.babel.plugin.transpiler.TranspileStrategy;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
-import lombok.Singular;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -19,20 +13,15 @@ import org.apache.maven.plugins.annotations.Parameter;
 
 import java.io.File;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
 import static java.lang.String.format;
 
 @Mojo(name = "babel", defaultPhase = LifecyclePhase.PROCESS_RESOURCES, threadSafe = true)
-@Data
-@Builder
-@EqualsAndHashCode(callSuper = true)
-@NoArgsConstructor
-@AllArgsConstructor
 public class BabelMojo extends AbstractMojo {
 
-    @Builder.Default
     @Parameter(property = "verbose", defaultValue = "false")
     private boolean verbose = false;
 
@@ -44,7 +33,6 @@ public class BabelMojo extends AbstractMojo {
     @Deprecated
     private boolean parallel = false;
 
-    @Builder.Default
     @Parameter(property = "threads", defaultValue = "1")
     private int threads = 1;
 
@@ -57,17 +45,14 @@ public class BabelMojo extends AbstractMojo {
     @Parameter(property = "targetDir", required = true)
     private File targetDir;
 
-    @Singular
     @Parameter(property = "jsSourceFiles", alias = "jsFiles")
-    private List<String> jsSourceFiles;
+    private List<String> jsSourceFiles = new ArrayList<>();
 
-    @Singular
     @Parameter(property = "jsSourceIncludes", alias = "jsIncludes")
-    private List<String> jsSourceIncludes;
+    private List<String> jsSourceIncludes = new ArrayList<>();
 
-    @Singular
     @Parameter(property = "jsSourceExcludes", alias = "jsExcludes")
-    private List<String> jsSourceExcludes;
+    private List<String> jsSourceExcludes = new ArrayList<>();
 
     @Parameter(property = "prefix")
     private String prefix;
@@ -75,7 +60,6 @@ public class BabelMojo extends AbstractMojo {
     @Parameter(property = "presets", defaultValue = "es2015")
     private String presets;
 
-    @Builder.Default
     @Parameter(property = "encoding")
     private String encoding = Charset.defaultCharset().name();
 
@@ -129,6 +113,86 @@ public class BabelMojo extends AbstractMojo {
             throw new MojoExecutionException("Failed on Babel transpile execution.", e);
         }
         getLog().info("Babel transpile execution successful.");
+    }
+
+    public boolean isVerbose() {return this.verbose;}
+
+    @Deprecated
+    public boolean isParallel() {return this.parallel;}
+
+    public int getThreads() {return this.threads;}
+
+    public File getBabelSrc() {return this.babelSrc;}
+
+    public File getSourceDir() {return this.sourceDir;}
+
+    public File getTargetDir() {return this.targetDir;}
+
+    public List<String> getJsSourceFiles() {return this.jsSourceFiles;}
+
+    public List<String> getJsSourceIncludes() {return this.jsSourceIncludes;}
+
+    public List<String> getJsSourceExcludes() {return this.jsSourceExcludes;}
+
+    public String getPrefix() {return this.prefix;}
+
+    public String getPresets() {return this.presets;}
+
+    public String getEncoding() {return this.encoding;}
+
+    public void setVerbose(boolean verbose) {this.verbose = verbose; }
+
+    @Deprecated
+    public void setParallel(boolean parallel) {this.parallel = parallel; }
+
+    public void setThreads(int threads) {this.threads = threads; }
+
+    public void setBabelSrc(File babelSrc) {this.babelSrc = babelSrc; }
+
+    public void setSourceDir(File sourceDir) {this.sourceDir = sourceDir; }
+
+    public void setTargetDir(File targetDir) {this.targetDir = targetDir; }
+
+    public void setJsSourceFiles(List<String> jsSourceFiles) {this.jsSourceFiles = jsSourceFiles; }
+
+    public void setJsSourceFile(String jsSourceFile) {
+        jsSourceFiles.add(jsSourceFile);
+    }
+
+    public void setJsSourceIncludes(List<String> jsSourceIncludes) {this.jsSourceIncludes = jsSourceIncludes; }
+
+    public void setJsSourceInclude(String jsSourceInclude) {
+        jsSourceIncludes.add(jsSourceInclude);
+    }
+
+    public void setJsSourceExcludes(List<String> jsSourceExcludes) {this.jsSourceExcludes = jsSourceExcludes; }
+
+    public void setJsSourceExclude(String jsSourceExclude) {
+        this.jsSourceExcludes.add(jsSourceExclude);
+    }
+
+    public void setPrefix(String prefix) {this.prefix = prefix; }
+
+    public void setPresets(String presets) {this.presets = presets; }
+
+    public void setEncoding(String encoding) {this.encoding = encoding; }
+
+    @Override
+    public String toString() {
+        return "BabelMojo{" +
+               "verbose=" + verbose +
+               ", parallel=" + parallel +
+               ", threads=" + threads +
+               ", babelSrc=" + babelSrc +
+               ", sourceDir=" + sourceDir +
+               ", targetDir=" + targetDir +
+               ", jsSourceFiles=" + jsSourceFiles +
+               ", jsSourceIncludes=" + jsSourceIncludes +
+               ", jsSourceExcludes=" + jsSourceExcludes +
+               ", prefix='" + prefix + '\'' +
+               ", presets='" + presets + '\'' +
+               ", encoding='" + encoding + '\'' +
+               '}';
     }
 
 }

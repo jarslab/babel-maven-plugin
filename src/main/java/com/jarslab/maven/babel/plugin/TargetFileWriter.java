@@ -1,7 +1,6 @@
 package com.jarslab.maven.babel.plugin;
 
 import com.jarslab.maven.babel.plugin.transpiler.Transpilation;
-import lombok.RequiredArgsConstructor;
 import org.apache.maven.plugin.logging.Log;
 
 import java.io.IOException;
@@ -9,7 +8,6 @@ import java.io.UncheckedIOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 
-@RequiredArgsConstructor
 class TargetFileWriter
 {
 

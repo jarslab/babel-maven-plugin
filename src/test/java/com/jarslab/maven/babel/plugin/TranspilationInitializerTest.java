@@ -1,6 +1,7 @@
 package com.jarslab.maven.babel.plugin;
 
 import com.jarslab.maven.babel.plugin.transpiler.Transpilation;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.io.File;
@@ -13,17 +14,22 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class TranspilationInitializerTest {
 
-    private BabelMojo.BabelMojoBuilder babelMojoBuilder = BabelMojo.builder()
-            .encoding("UTF-8")
-            .babelSrc(TestUtils.getBabelPath().toFile())
-            .sourceDir(TestUtils.getBasePath().toFile())
-            .targetDir(Paths.get("foo").toFile())
-            .presets("es2015");
+    private BabelMojo babelMojo;
+
+    @Before
+    public void setUp() {
+        babelMojo = new BabelMojo();
+        babelMojo.setEncoding("UTF-8");
+        babelMojo.setBabelSrc(TestUtils.getBabelPath().toFile());
+        babelMojo.setSourceDir(TestUtils.getBasePath().toFile());
+        babelMojo.setTargetDir(Paths.get("foo").toFile());
+        babelMojo.setPresets("es2015");
+    }
 
     @Test
     public void shouldNotFailForEmptyParameters() {
         // Given
-        BabelMojo babelMojo = babelMojoBuilder.build();
+        // babelMojo
 
         // When
         Set<Transpilation> transpilations = new TranspilationInitializer(babelMojo).getTranspilations();
@@ -35,9 +41,7 @@ public class TranspilationInitializerTest {
     @Test
     public void shouldGetFilesFromStaticList() {
         // Given
-        BabelMojo babelMojo = babelMojoBuilder
-                .jsSourceFile("/src/test.js")
-                .build();
+        babelMojo.setJsSourceFile("/src/test.js");
 
         // When
         Set<Transpilation> transpilations = new TranspilationInitializer(babelMojo).getTranspilations();
@@ -50,9 +54,7 @@ public class TranspilationInitializerTest {
     @Test
     public void shouldGetFilesFromIncludesList() {
         // Given
-        BabelMojo babelMojo = babelMojoBuilder
-                .jsSourceInclude("/src/a/test-*.js")
-                .build();
+        babelMojo.setJsSourceInclude("/src/a/test-*.js");
 
         // When
         Set<Transpilation> transpilations = new TranspilationInitializer(babelMojo).getTranspilations();
@@ -64,9 +66,7 @@ public class TranspilationInitializerTest {
     @Test
     public void shouldGetFilesFromIncludesListUsingFileSeparator() {
         // Given
-        BabelMojo babelMojo = babelMojoBuilder
-                .jsSourceInclude(File.separator + "src" + File.separator + "a" + File.separator + "test-*.js")
-                .build();
+        babelMojo.setJsSourceInclude(File.separator + "src" + File.separator + "a" + File.separator + "test-*.js");
 
         // When
         Set<Transpilation> transpilations = new TranspilationInitializer(babelMojo).getTranspilations();
@@ -78,10 +78,8 @@ public class TranspilationInitializerTest {
     @Test
     public void shouldGetFilesFromIncludesListApplyingExclude() {
         //Given
-        BabelMojo babelMojo = babelMojoBuilder
-                .jsSourceInclude("/src/a/test-*.js")
-                .jsSourceExclude("/src/a/*react*")
-                .build();
+        babelMojo.setJsSourceInclude("/src/a/test-*.js");
+        babelMojo.setJsSourceExclude("/src/a/*react*");
 
         // When
         Set<Transpilation> transpilations = new TranspilationInitializer(babelMojo).getTranspilations();
@@ -93,11 +91,9 @@ public class TranspilationInitializerTest {
     @Test
     public void shouldGetFilesFromAllParameters() {
         // Given
-        BabelMojo babelMojo = babelMojoBuilder
-                .jsSourceFile("/src/test.js")
-                .jsSourceInclude("/src/a/test-*.js")
-                .jsSourceExclude("/src/a/*es6.js")
-                .build();
+        babelMojo.setJsSourceFile("/src/test.js");
+        babelMojo.setJsSourceInclude("/src/a/test-*.js");
+        babelMojo.setJsSourceExclude("/src/a/*es6.js");
 
         // When
         Set<Transpilation> transpilations = new TranspilationInitializer(babelMojo).getTranspilations();
@@ -110,12 +106,10 @@ public class TranspilationInitializerTest {
     public void shouldMapRelatively() {
         // Given
         Path targetDirectory = Paths.get("some", "target", "path");
-        BabelMojo mojo = babelMojoBuilder
-                .targetDir(targetDirectory.toFile())
-                .jsSourceFile("/src/test.js")
-                .build();
+        babelMojo.setTargetDir(targetDirectory.toFile());
+        babelMojo.setJsSourceFile("/src/test.js");
 
-        TranspilationInitializer transpilationInitializer = new TranspilationInitializer(mojo);
+        TranspilationInitializer transpilationInitializer = new TranspilationInitializer(babelMojo);
 
         // When
         Set<Transpilation> transpilations = transpilationInitializer.getTranspilations();
@@ -128,10 +122,8 @@ public class TranspilationInitializerTest {
     @Test
     public void shouldAddPrefix() {
         // Given
-        BabelMojo babelMojo = babelMojoBuilder
-                .jsSourceFile("/src/test.js")
-                .prefix("some-prefix-")
-                .build();
+        babelMojo.setJsSourceFile("/src/test.js");
+        babelMojo.setPrefix("some-prefix-");
 
         // When
         Set<Transpilation> transpilations = new TranspilationInitializer(babelMojo).getTranspilations();

@@ -1,6 +1,5 @@
 package com.jarslab.maven.babel.plugin.transpiler;
 
-import lombok.NonNull;
 import org.apache.maven.plugin.logging.Log;
 
 import javax.script.ScriptEngine;
@@ -12,6 +11,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
+import java.util.Objects;
 
 import static java.lang.String.format;
 
@@ -25,7 +25,8 @@ public class BabelTranspiler {
     private ScriptEngine engine;
     private SimpleBindings simpleBindings;
 
-    private void init(@NonNull TranspilationContext context) {
+    private void init(TranspilationContext context) {
+        Objects.requireNonNull(context);
         if(this.context == null || !this.context.equals(context)) {
             this.context = context;
             createEngine();

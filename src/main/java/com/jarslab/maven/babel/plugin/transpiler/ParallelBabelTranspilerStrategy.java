@@ -1,6 +1,5 @@
 package com.jarslab.maven.babel.plugin.transpiler;
 
-import lombok.AllArgsConstructor;
 import org.apache.maven.plugin.logging.Log;
 
 import java.util.Set;
@@ -16,10 +15,13 @@ import static java.lang.String.format;
  * Uses a multiple BabelTranspilers in parallel, each of which performs transpilations
  * in sequence.
  */
-@AllArgsConstructor
 class ParallelBabelTranspilerStrategy implements BabelTranspilerStrategy {
 
     private  int threads;
+
+    ParallelBabelTranspilerStrategy(int threads) {
+        this.threads = threads;
+    }
 
     @Override
     public Stream<Transpilation> execute(Set<Transpilation> transpilations) {
