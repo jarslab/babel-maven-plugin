@@ -23,8 +23,8 @@ public class BabelTranspilerTest {
 
     private Log log = new SystemStreamLog();
 
-    private TranspilationContext.TranspilationContextBuilder contextBuilder = TranspilationContext.builder()
-            .verbose(true)
+    private ImmutableTranspilationContext.Builder contextBuilder = ImmutableTranspilationContext.builder()
+            .isVerbose(true)
             .log(log)
             .babelSource(TestUtils.getBabelPath().toFile())
             .charset(Charset.forName("UTF-8"));
@@ -33,8 +33,9 @@ public class BabelTranspilerTest {
     @Test
     public void shouldTranspileEs6File() {
         // Given
-        Transpilation transpilation = Transpilation.builder()
+        Transpilation transpilation = ImmutableTranspilation.builder()
                 .source(TestUtils.getBasePath().resolve(Paths.get("src", "a", "test-es6.js")))
+                .target(Paths.get("foo"))
                 .context(contextBuilder.presets("'es2015'").build())
                 .build();
 
@@ -42,21 +43,24 @@ public class BabelTranspilerTest {
         transpilation = new BabelTranspiler().execute(transpilation);
 
         // Then
-        assertThat(transpilation.getResult(), is(TestUtils.getResourceAsString("/trans/a/trans-test-es6.js")));
+        assertThat(transpilation.getResult().isPresent(), is(true));
+        assertThat(transpilation.getResult().get(), is(TestUtils.getResourceAsString("/trans/a/trans-test-es6.js")));
     }
 
     @Test
     public void shouldTranspileReactFile() {
         // Given
-        Transpilation transpilation = Transpilation.builder()
+        Transpilation transpilation = ImmutableTranspilation.builder()
                 .source(TestUtils.getBasePath().resolve(Paths.get("src", "a", "test-react.js")))
+                .target(Paths.get("foo"))
                 .context(contextBuilder.presets("'react'").build())
                 .build();
 
         transpilation = new BabelTranspiler().execute(transpilation);
 
         // Then
-        assertThat(transpilation.getResult(), is(TestUtils.getResourceAsString("/trans/a/trans-test-react.js")));
+        assertThat(transpilation.getResult().isPresent(), is(true));
+        assertThat(transpilation.getResult().get(), is(TestUtils.getResourceAsString("/trans/a/trans-test-react.js")));
     }
 
 }

@@ -2,11 +2,12 @@ package com.jarslab.maven.babel.plugin.transpiler;
 
 import org.apache.maven.plugin.logging.Log;
 
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import static java.lang.String.format;
@@ -43,34 +44,29 @@ class ParallelBabelTranspilerStrategy implements BabelTranspilerStrategy {
         }
 
         // Each thread's task is to create babel transpiler and perform as much transpilations as possible
-        Runnable task = () -> {
+        Supplier<Collection<Transpilation>> task = () -> {
             BabelTranspiler transpiler = new BabelTranspiler();
             Transpilation transpilation;
-            while((transpilation = queue.poll()) != null){
+            Set<Transpilation> transpiled = new HashSet<>();
+            while ((transpilation = queue.poll()) != null) {
                 if (log.isDebugEnabled()) {
                     String name = Thread.currentThread().getName();
                     log.debug(format("[%s] transpiling %s", name, transpilation.getSource()));
                 }
-                transpiler.execute(transpilation);
+                transpiled.add(transpiler.execute(transpilation));
             }
+            return transpiled;
         };
 
-        ExecutorService executorService = Executors.newFixedThreadPool(threads);
+        Collection<CompletableFuture<Collection<Transpilation>>> futures = new HashSet<>();
 
         for(int i = 0; i < threads; i++) {
-            executorService.submit(task);
+            futures.add(CompletableFuture.supplyAsync(task));
         }
 
-        // Wait for the tasks to finish
-        try {
-            executorService.shutdown();
-            executorService.awaitTermination(1, TimeUnit.DAYS);
-        } catch (InterruptedException e) {
-            transpilations.iterator().next().getContext().getLog().error(e.getMessage(), e);
-        }
-
-        // Return a parallel stream, allowing for writing the result in parallel.
-        return transpilations.parallelStream();
+        return futures.stream()
+                .map(CompletableFuture::join)
+                .flatMap(Collection::stream);
     }
 
 }

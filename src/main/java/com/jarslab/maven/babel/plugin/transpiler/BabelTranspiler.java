@@ -63,8 +63,8 @@ public class BabelTranspiler {
             if (log.isDebugEnabled()) {
                 log.debug(format("%s result:\n%s", transpilation.getTarget(), result));
             }
-            transpilation.setResult(result);
-            return transpilation;
+            return ImmutableTranspilation.copyOf(transpilation)
+                    .withResult(result);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         } catch (ScriptException e) {

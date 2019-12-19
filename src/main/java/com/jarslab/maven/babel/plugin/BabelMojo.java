@@ -108,6 +108,7 @@ public class BabelMojo extends AbstractMojo {
 
         try {
             transpiler.execute(transpilations)
+                    .parallel()
                     .forEach(TargetFileWriter::writeTargetFile);
         } catch (Exception e) {
             throw new MojoExecutionException("Failed on Babel transpile execution.", e);

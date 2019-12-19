@@ -18,7 +18,10 @@ class TargetFileWriter
         try {
             log.debug(String.format("writing to %s", transpilation.getTarget()));
             Files.createDirectories(transpilation.getTarget().getParent());
-            Files.write(transpilation.getTarget(), transpilation.getResult().getBytes(charset));
+            byte[] bytes = transpilation.getResult()
+                    .orElseThrow(() -> new IllegalStateException("No result for transpilation. Cannot write transpilation (" + transpilation + ")"))
+                    .getBytes(charset);
+            Files.write(transpilation.getTarget(), bytes);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }

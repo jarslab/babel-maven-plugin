@@ -1,5 +1,7 @@
 package com.jarslab.maven.babel.plugin;
 
+import com.jarslab.maven.babel.plugin.transpiler.ImmutableTranspilation;
+import com.jarslab.maven.babel.plugin.transpiler.ImmutableTranspilationContext;
 import com.jarslab.maven.babel.plugin.transpiler.Transpilation;
 import com.jarslab.maven.babel.plugin.transpiler.TranspilationContext;
 import org.codehaus.plexus.util.DirectoryScanner;
@@ -25,31 +27,31 @@ class TranspilationInitializer {
     }
 
     Set<Transpilation> getTranspilations() {
-        final Set<Transpilation> transpilations = new HashSet<>();
+        final Set<ImmutableTranspilation.Builder> transpilations = new HashSet<>();
 
-        TranspilationContext context = TranspilationContext.builder()
+        TranspilationContext context = ImmutableTranspilationContext.builder()
                 .babelSource(babelMojo.getBabelSrc())
                 .charset(Charset.forName(babelMojo.getEncoding()))
                 .log(babelMojo.getLog())
-                .verbose(babelMojo.isVerbose())
+                .isVerbose(babelMojo.isVerbose())
                 .presets(getFormattedPresets(babelMojo))
                 .build();
 
         addStaticFiles(transpilations);
         addPatternMatchedFiles(transpilations);
 
-        transpilations.forEach(t -> t.setContext(context));
-
-        return transpilations;
+        return transpilations.stream()
+            .map(t -> t.context(context).build())
+            .collect(Collectors.toSet());
     }
 
-    private void addStaticFiles(Set<Transpilation> sourceFiles) {
+    private void addStaticFiles(Set<ImmutableTranspilation.Builder> sourceFiles) {
         // Add statically added files
         babelMojo.getJsSourceFiles().stream()
                 .map(this::removeLeadingSlash)
                 .map(this::resolveAgainstSourceDirectory)
                 .filter(p -> p.toFile().exists())
-                .map(this::toTranspilation)
+                .map(this::toTranspilationBuilder)
                 .forEach(sourceFiles::add);
     }
 
@@ -57,21 +59,20 @@ class TranspilationInitializer {
         return babelMojo.getSourceDir().toPath().resolve(s);
     }
 
-    private void addPatternMatchedFiles(Set<Transpilation> sourceFiles) {
+    private void addPatternMatchedFiles(Set<ImmutableTranspilation.Builder> sourceFiles) {
         // Add pattern matched files
         if (!babelMojo.getJsSourceIncludes().isEmpty()) {
             Stream.of(getIncludesDirectoryScanner().getIncludedFiles())
                     .map(this::resolveAgainstSourceDirectory)
-                    .map(this::toTranspilation)
+                    .map(this::toTranspilationBuilder)
                     .forEach(sourceFiles::add);
         }
     }
 
-    private Transpilation toTranspilation(Path sourceFile) {
-        return Transpilation.builder()
+    private ImmutableTranspilation.Builder toTranspilationBuilder(Path sourceFile) {
+        return ImmutableTranspilation.builder()
                 .source(sourceFile)
-                .target(determineTargetPath(sourceFile))
-                .build();
+                .target(determineTargetPath(sourceFile));
     }
 
     private String getFormattedPresets(final BabelMojo mojo) {

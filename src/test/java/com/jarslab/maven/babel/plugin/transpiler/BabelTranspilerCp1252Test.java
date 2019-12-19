@@ -14,8 +14,10 @@ import java.io.File;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
@@ -48,9 +50,10 @@ public class BabelTranspilerCp1252Test {
                 Files.readAllLines(TestUtils.getBasePath().resolve("src/a/test-react.js")),
                 Charset.forName("UTF-8"));
 
-        Transpilation transpilation = Transpilation.builder()
+        Transpilation transpilation = ImmutableTranspilation.builder()
                 .source(sourceFilePath)
-                .context(TranspilationContext.builder()
+                .target(Paths.get("foo"))
+                .context(ImmutableTranspilationContext.builder()
                         .log(log)
                         .babelSource(TestUtils.getBabelPath().toFile())
                         .presets("'react'")
@@ -62,7 +65,8 @@ public class BabelTranspilerCp1252Test {
         transpilation = new BabelTranspiler().execute(transpilation);
 
         // Then
-        assertThat(transpilation.getResult(), containsString("createElement"));
+        assertThat(transpilation.getResult().isPresent(), is(true));
+        assertThat(transpilation.getResult().get(), containsString("createElement"));
     }
 
 }
