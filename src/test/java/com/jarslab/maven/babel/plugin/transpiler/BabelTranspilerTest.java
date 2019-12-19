@@ -12,8 +12,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 import java.nio.charset.Charset;
 import java.nio.file.Paths;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(MockitoJUnitRunner.class)
 public class BabelTranspilerTest {
@@ -43,8 +42,7 @@ public class BabelTranspilerTest {
         transpilation = new BabelTranspiler().execute(transpilation);
 
         // Then
-        assertThat(transpilation.getResult().isPresent(), is(true));
-        assertThat(transpilation.getResult().get(), is(TestUtils.getResourceAsString("/trans/a/trans-test-es6.js")));
+        assertThat(transpilation.getResult()).get().isEqualTo(TestUtils.getResourceAsString("/trans/a/trans-test-es6.js"));
     }
 
     @Test
@@ -59,8 +57,7 @@ public class BabelTranspilerTest {
         transpilation = new BabelTranspiler().execute(transpilation);
 
         // Then
-        assertThat(transpilation.getResult().isPresent(), is(true));
-        assertThat(transpilation.getResult().get(), is(TestUtils.getResourceAsString("/trans/a/trans-test-react.js")));
+        assertThat(transpilation.getResult()).get().isEqualTo(TestUtils.getResourceAsString("/trans/a/trans-test-react.js"));
     }
 
 }

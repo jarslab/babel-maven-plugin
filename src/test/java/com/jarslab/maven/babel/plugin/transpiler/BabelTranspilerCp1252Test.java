@@ -16,9 +16,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * This test is broken by design.
@@ -65,8 +63,9 @@ public class BabelTranspilerCp1252Test {
         transpilation = new BabelTranspiler().execute(transpilation);
 
         // Then
-        assertThat(transpilation.getResult().isPresent(), is(true));
-        assertThat(transpilation.getResult().get(), containsString("createElement"));
+        assertThat(transpilation.getResult()).isPresent();
+        //noinspection OptionalGetWithoutIsPresent
+        assertThat(transpilation.getResult().get()).contains("createElement");
     }
 
 }
