@@ -38,7 +38,7 @@ class ParallelBabelTranspilerStrategy implements BabelTranspilerStrategy {
 
         // Use a maximum number of threads equal to the amount of available processors
         if(threads > Runtime.getRuntime().availableProcessors()) {
-            log.warn(format("Number of threads more than available processors (%d), setting number of threads to %d",
+            log.warn(format("Configured number of threads (%d) exceeds the number of available processors (%d), setting number of threads to %2$d",
                     threads, Runtime.getRuntime().availableProcessors()));
             this.threads = Runtime.getRuntime().availableProcessors();
         }
