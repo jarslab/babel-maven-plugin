@@ -9,7 +9,7 @@ It requires no npm or node.js, it is plain Java project which works perfectly co
 <dependency>
   <groupId>com.jarslab.maven</groupId>
   <artifactId>babel-maven-plugin</artifactId>
-  <version>1.2</version>
+  <version>1.3</version>
 </dependency>
 ```
 
