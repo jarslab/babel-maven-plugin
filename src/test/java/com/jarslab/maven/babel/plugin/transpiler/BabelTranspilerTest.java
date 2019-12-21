@@ -1,5 +1,6 @@
-package com.jarslab.maven.babel.plugin;
+package com.jarslab.maven.babel.plugin.transpiler;
 
+import com.jarslab.maven.babel.plugin.TestUtils;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.plugin.logging.SystemStreamLog;
 import org.junit.Rule;
@@ -11,8 +12,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 import java.nio.charset.Charset;
 import java.nio.file.Paths;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(MockitoJUnitRunner.class)
 public class BabelTranspilerTest {
@@ -22,8 +22,8 @@ public class BabelTranspilerTest {
 
     private Log log = new SystemStreamLog();
 
-    private BabelTranspiler.BabelTranspilerBuilder babelTranspilerBuilder = BabelTranspiler.builder()
-            .verbose(true)
+    private ImmutableTranspilationContext.Builder contextBuilder = ImmutableTranspilationContext.builder()
+            .isVerbose(true)
             .log(log)
             .babelSource(TestUtils.getBabelPath().toFile())
             .charset(Charset.forName("UTF-8"));
@@ -32,36 +32,32 @@ public class BabelTranspilerTest {
     @Test
     public void shouldTranspileEs6File() {
         // Given
-        TranspileContext context = TranspileContext.builder()
+        Transpilation transpilation = ImmutableTranspilation.builder()
                 .source(TestUtils.getBasePath().resolve(Paths.get("src", "a", "test-es6.js")))
-                .build();
-
-        BabelTranspiler babelTranspiler = babelTranspilerBuilder
-                .presets("'es2015'")
+                .target(Paths.get("foo"))
+                .context(contextBuilder.presets("'es2015'").build())
                 .build();
 
         // When
-        context = babelTranspiler.execute(context);
+        transpilation = new BabelTranspiler().execute(transpilation);
 
         // Then
-        assertThat(context.getResult(), is(TestUtils.getResourceAsString("/trans/a/trans-test-es6.js")));
+        assertThat(transpilation.getResult()).get().isEqualTo(TestUtils.getResourceAsString("/trans/a/trans-test-es6.js"));
     }
 
     @Test
     public void shouldTranspileReactFile() {
         // Given
-        TranspileContext context = TranspileContext.builder()
+        Transpilation transpilation = ImmutableTranspilation.builder()
                 .source(TestUtils.getBasePath().resolve(Paths.get("src", "a", "test-react.js")))
+                .target(Paths.get("foo"))
+                .context(contextBuilder.presets("'react'").build())
                 .build();
 
-        BabelTranspiler babelTranspiler = babelTranspilerBuilder
-                .presets("'react'")
-                .build();
-
-        context = babelTranspiler.execute(context);
+        transpilation = new BabelTranspiler().execute(transpilation);
 
         // Then
-        assertThat(context.getResult(), is(TestUtils.getResourceAsString("/trans/a/trans-test-react.js")));
+        assertThat(transpilation.getResult()).get().isEqualTo(TestUtils.getResourceAsString("/trans/a/trans-test-react.js"));
     }
 
 }

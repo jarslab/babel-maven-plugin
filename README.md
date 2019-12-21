@@ -15,7 +15,8 @@ It requires no npm or node.js, it is plain Java project which works perfectly co
 
 ## Settings, ie buttons and knobs
 * **`verbose`** - no surprises, the execution becomes a bit more talkative (default: _false_),
-* **`parallel`** - if true will run files transpilation in parallel (on ForkJoin pool) (default: _true_),
+* ~~**`parallel`** - if true will run files transpilation in parallel (on ForkJoin pool) (default: _false_)~~ **deprecated** in favor of **`threads`**.
+* **`threads`** - number of threads to use when transpiling (default: _1_, will be capped on the amount of processors available)
 * **`encoding`** - will apply chosen encoding during files operations (read/write) (default: `Charset.defaultCharset()`),
 * **`babelSrc`** - readable path to standalone(!) Babel sources. It can be provided from WebJars dependency, minified 
 or development version,

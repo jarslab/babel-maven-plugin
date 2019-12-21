@@ -1,5 +1,7 @@
 package com.jarslab.maven.babel.plugin;
 
+import com.jarslab.maven.babel.plugin.transpiler.Transpilation;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.io.File;
@@ -12,16 +14,25 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class TranspilationInitializerTest {
 
+    private BabelMojo babelMojo;
+
+    @Before
+    public void setUp() {
+        babelMojo = new BabelMojo();
+        babelMojo.setEncoding("UTF-8");
+        babelMojo.setBabelSrc(TestUtils.getBabelPath().toFile());
+        babelMojo.setSourceDir(TestUtils.getBasePath().toFile());
+        babelMojo.setTargetDir(Paths.get("foo").toFile());
+        babelMojo.setPresets("es2015");
+    }
+
     @Test
     public void shouldNotFailForEmptyParameters() {
         // Given
-        TranspilationInitializer transpilationInitializer = TranspilationInitializer.builder()
-                .sourceDirectory(Paths.get("foo"))
-                .targetDirectory(Paths.get("bar"))
-                .build();
+        // babelMojo
 
         // When
-        Set<TranspileContext> transpilations = transpilationInitializer.getTranspilations();
+        Set<Transpilation> transpilations = new TranspilationInitializer(babelMojo).getTranspilations();
 
         // Then
         assertThat(transpilations).isEmpty();
@@ -30,30 +41,23 @@ public class TranspilationInitializerTest {
     @Test
     public void shouldGetFilesFromStaticList() {
         // Given
-        TranspilationInitializer transpilationInitializer = TranspilationInitializer.builder()
-                .sourceDirectory(TestUtils.getBasePath())
-                .targetDirectory(Paths.get("bar"))
-                .file("/src/test.js")
-                .build();
+        babelMojo.setJsSourceFile("/src/test.js");
 
         // When
-        Set<TranspileContext> transpilations = transpilationInitializer.getTranspilations();
+        Set<Transpilation> transpilations = new TranspilationInitializer(babelMojo).getTranspilations();
 
         // Then
         assertThat(getSourceFilesNames(transpilations)).containsOnly("test.js");
     }
 
+
     @Test
     public void shouldGetFilesFromIncludesList() {
         // Given
-        TranspilationInitializer transpilationInitializer = TranspilationInitializer.builder()
-                .sourceDirectory(TestUtils.getBasePath())
-                .targetDirectory(Paths.get("bar"))
-                .include("/src/a/test-*.js")
-                .build();
+        babelMojo.setJsSourceInclude("/src/a/test-*.js");
 
         // When
-        Set<TranspileContext> transpilations = transpilationInitializer.getTranspilations();
+        Set<Transpilation> transpilations = new TranspilationInitializer(babelMojo).getTranspilations();
 
         //Then
         assertThat(getSourceFilesNames(transpilations)).containsOnly("test-es6.js", "test-react.js");
@@ -62,14 +66,10 @@ public class TranspilationInitializerTest {
     @Test
     public void shouldGetFilesFromIncludesListUsingFileSeparator() {
         // Given
-        TranspilationInitializer transpilationInitializer = TranspilationInitializer.builder()
-                .sourceDirectory(TestUtils.getBasePath())
-                .targetDirectory(Paths.get("bar"))
-                .include(File.separator + "src" + File.separator + "a" + File.separator + "test-*.js")
-                .build();
+        babelMojo.setJsSourceInclude(File.separator + "src" + File.separator + "a" + File.separator + "test-*.js");
 
         // When
-        Set<TranspileContext> transpilations = transpilationInitializer.getTranspilations();
+        Set<Transpilation> transpilations = new TranspilationInitializer(babelMojo).getTranspilations();
 
         //Then
         assertThat(getSourceFilesNames(transpilations)).containsOnly("test-es6.js", "test-react.js");
@@ -78,15 +78,11 @@ public class TranspilationInitializerTest {
     @Test
     public void shouldGetFilesFromIncludesListApplyingExclude() {
         //Given
-        TranspilationInitializer transpilationInitializer = TranspilationInitializer.builder()
-                .sourceDirectory(TestUtils.getBasePath())
-                .targetDirectory(Paths.get("bar"))
-                .include("/src/a/test-*.js")
-                .exclude("/src/a/*react*")
-                .build();
+        babelMojo.setJsSourceInclude("/src/a/test-*.js");
+        babelMojo.setJsSourceExclude("/src/a/*react*");
 
         // When
-        Set<TranspileContext> transpilations = transpilationInitializer.getTranspilations();
+        Set<Transpilation> transpilations = new TranspilationInitializer(babelMojo).getTranspilations();
 
         //Then
         assertThat(getSourceFilesNames(transpilations)).containsOnly("test-es6.js");
@@ -95,16 +91,12 @@ public class TranspilationInitializerTest {
     @Test
     public void shouldGetFilesFromAllParameters() {
         // Given
-        TranspilationInitializer transpilationInitializer = TranspilationInitializer.builder()
-                .sourceDirectory(TestUtils.getBasePath())
-                .targetDirectory(Paths.get("bar"))
-                .file("/src/test.js")
-                .include("/src/a/test-*.js")
-                .exclude("/src/a/*es6.js")
-                .build();
+        babelMojo.setJsSourceFile("/src/test.js");
+        babelMojo.setJsSourceInclude("/src/a/test-*.js");
+        babelMojo.setJsSourceExclude("/src/a/*es6.js");
 
         // When
-        Set<TranspileContext> transpilations = transpilationInitializer.getTranspilations();
+        Set<Transpilation> transpilations = new TranspilationInitializer(babelMojo).getTranspilations();
 
         // Then
         assertThat(getSourceFilesNames(transpilations)).containsOnly("test.js", "test-react.js");
@@ -114,42 +106,36 @@ public class TranspilationInitializerTest {
     public void shouldMapRelatively() {
         // Given
         Path targetDirectory = Paths.get("some", "target", "path");
-        TranspilationInitializer transpilationInitializer = TranspilationInitializer.builder()
-                .sourceDirectory(TestUtils.getBasePath())
-                .targetDirectory(targetDirectory)
-                .file("/src/test.js")
-                .build();
+        babelMojo.setTargetDir(targetDirectory.toFile());
+        babelMojo.setJsSourceFile("/src/test.js");
+
+        TranspilationInitializer transpilationInitializer = new TranspilationInitializer(babelMojo);
 
         // When
-        Set<TranspileContext> transpilations = transpilationInitializer.getTranspilations();
+        Set<Transpilation> transpilations = transpilationInitializer.getTranspilations();
 
         // Then
         Path targetFile = transpilations.iterator().next().getTarget();
         assertThat(targetDirectory.relativize(targetFile)).isEqualTo(Paths.get("src", "test.js"));
-
     }
 
     @Test
     public void shouldAddPrefix() {
         // Given
-        TranspilationInitializer transpilationInitializer = TranspilationInitializer.builder()
-                .sourceDirectory(TestUtils.getBasePath())
-                .targetDirectory(Paths.get("foo"))
-                .file("/src/test.js")
-                .prefix("some-prefix-")
-                .build();
+        babelMojo.setJsSourceFile("/src/test.js");
+        babelMojo.setPrefix("some-prefix-");
 
         // When
-        Set<TranspileContext> transpilations = transpilationInitializer.getTranspilations();
+        Set<Transpilation> transpilations = new TranspilationInitializer(babelMojo).getTranspilations();
 
         // Then
         String fileName = transpilations.iterator().next().getTarget().getFileName().toString();
         assertThat(fileName).isEqualTo("some-prefix-test.js");
     }
 
-    private Stream<String> getSourceFilesNames(Set<TranspileContext> transpilations) {
+    private Stream<String> getSourceFilesNames(Set<Transpilation> transpilations) {
         return transpilations.parallelStream()
-                .map(TranspileContext::getSource)
+                .map(Transpilation::getSource)
                 .map(Path::getFileName)
                 .map(Path::toString);
     }

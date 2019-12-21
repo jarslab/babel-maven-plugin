@@ -1,6 +1,6 @@
 package com.jarslab.maven.babel.plugin;
 
-import lombok.RequiredArgsConstructor;
+import com.jarslab.maven.babel.plugin.transpiler.Transpilation;
 import org.apache.maven.plugin.logging.Log;
 
 import java.io.IOException;
@@ -8,18 +8,20 @@ import java.io.UncheckedIOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 
-@RequiredArgsConstructor
 class TargetFileWriter
 {
-    private final Charset charset;
-    private final Log log;
 
-    void writeTargetFile(TranspileContext context)
+    static void writeTargetFile(Transpilation transpilation)
     {
+        Log log = transpilation.getContext().getLog();
+        Charset charset = transpilation.getContext().getCharset();
         try {
-            log.debug(String.format("writing to %s", context.getTarget()));
-            Files.createDirectories(context.getTarget().getParent());
-            Files.write(context.getTarget(), context.getResult().getBytes(charset));
+            log.debug(String.format("writing to %s", transpilation.getTarget()));
+            Files.createDirectories(transpilation.getTarget().getParent());
+            byte[] bytes = transpilation.getResult()
+                    .orElseThrow(() -> new IllegalStateException("No result for transpilation. Cannot write transpilation (" + transpilation + ")"))
+                    .getBytes(charset);
+            Files.write(transpilation.getTarget(), bytes);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }

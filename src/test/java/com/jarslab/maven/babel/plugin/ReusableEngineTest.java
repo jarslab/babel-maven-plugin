@@ -26,8 +26,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static java.lang.String.format;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class ReusableEngineTest {
 
@@ -68,7 +67,7 @@ public class ReusableEngineTest {
         log.info("Result:");
         log.info(result);
 
-        assertThat(result, is(EXPECTED_RESULT));
+        assertThat(result).isEqualTo(EXPECTED_RESULT);
     }
 
     @Test
@@ -111,7 +110,7 @@ public class ReusableEngineTest {
                 taskBindings.put(optBinding, "{ presets: ['es2015'] }");
                 String result = (String) engine.eval("Babel.transform(" + srcBinding + ", { presets: ['es2015'] }).code", taskBindings);
 
-                assertThat(result, is(EXPECTED_RESULT));
+                assertThat(result).isEqualTo(EXPECTED_RESULT);
 
             } catch (Exception e) {
                 exc.add(e);
@@ -129,7 +128,7 @@ public class ReusableEngineTest {
         executorService.awaitTermination(1, TimeUnit.MINUTES);
         log.info(format("Transpiled %d sources in %s", n, stopwatch.stop()));
 
-        assertThat(executorService.isTerminated(), is(true));
+        assertThat(executorService.isTerminated()).isTrue();
 
         if (!exc.isEmpty()) {
             log.error(format("%d exceptions occurred during multithreaded transpilation.", exc.size()));
