@@ -28,20 +28,21 @@ import java.util.stream.Collectors;
 import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class ReusableEngineTest {
-
+public class ReusableEngineTest
+{
     @Rule
     public ExpectedException expectedException = ExpectedException.none();
 
     private static final String EXPECTED_RESULT = "\"use strict\";\n" +
-                          "\n" +
-                          "var x = function x(_x, y) {\n" +
-                          "  return _x * y;\n" +
-                          "};";
+            "\n" +
+            "var x = function x(_x, y) {\n" +
+            "  return _x * y;\n" +
+            "};";
     private Log log = new SystemStreamLog();
 
     @Test
-    public void testBabel() throws Exception {
+    public void testBabel() throws Exception
+    {
 
         Stopwatch stopwatch = new Stopwatch();
         InputStream inputStream = ReusableEngineTest.class.getResourceAsStream("/babel-6.26.0.min.js");
@@ -58,7 +59,7 @@ public class ReusableEngineTest {
                 .lines().collect(Collectors.joining());
         String srcBinding = "transpilationSource";
         bindings.put(srcBinding, source);
-        String result = (String) engine.eval("Babel.transform(" + srcBinding +", { presets: ['es2015'] }).code", bindings);
+        String result = (String) engine.eval("Babel.transform(" + srcBinding + ", { presets: ['es2015'] }).code", bindings);
 
         stopwatch.stop();
         log.info("Transpiled source in " + stopwatch);
@@ -79,7 +80,8 @@ public class ReusableEngineTest {
      * However, because loading the babel library into the engine takes quite some time, it is a good
      * idea to eval the minified babel once, and then reuse the engine to transpile each source file.
      */
-    public void testReuseEngine() throws Exception {
+    public void testReuseEngine() throws Exception
+    {
 
         log.info("Initialize script engine ...");
 
@@ -136,9 +138,11 @@ public class ReusableEngineTest {
         }
     }
 
-    static class Stopwatch {
+    static class Stopwatch
+    {
 
         private DecimalFormat decimalFormat = (DecimalFormat) NumberFormat.getInstance(Locale.US);
+
         {
             DecimalFormatSymbols decimalFormatSymbols = decimalFormat.getDecimalFormatSymbols();
             decimalFormatSymbols.setGroupingSeparator(' ');
@@ -148,23 +152,26 @@ public class ReusableEngineTest {
         private long start;
         private long end;
 
-        public Stopwatch() {
+        public Stopwatch()
+        {
             start();
         }
 
-        public void start() {
+        public void start()
+        {
             start = System.nanoTime();
         }
 
-        Stopwatch stop() {
+        Stopwatch stop()
+        {
             end = System.nanoTime();
             return this;
         }
 
-        public String toString() {
+        public String toString()
+        {
             return format("%sms", decimalFormat.format((end - start) / 1000000));
         }
 
     }
-
 }

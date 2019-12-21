@@ -67,5 +67,4 @@ public class BabelTranspilerCp1252Test {
         //noinspection OptionalGetWithoutIsPresent
         assertThat(transpilation.getResult().get()).contains("createElement");
     }
-
 }

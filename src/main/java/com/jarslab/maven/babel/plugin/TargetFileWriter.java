@@ -10,21 +10,20 @@ import java.nio.file.Files;
 
 class TargetFileWriter
 {
-
-    static void writeTargetFile(Transpilation transpilation)
+    static void writeTargetFile(final Transpilation transpilation)
     {
-        Log log = transpilation.getContext().getLog();
-        Charset charset = transpilation.getContext().getCharset();
+        final Log log = transpilation.getContext().getLog();
+        final Charset charset = transpilation.getContext().getCharset();
         try {
             log.debug(String.format("writing to %s", transpilation.getTarget()));
             Files.createDirectories(transpilation.getTarget().getParent());
-            byte[] bytes = transpilation.getResult()
-                    .orElseThrow(() -> new IllegalStateException("No result for transpilation. Cannot write transpilation (" + transpilation + ")"))
+            final byte[] bytes = transpilation.getResult()
+                    .orElseThrow(() -> new IllegalStateException(
+                            "No result for transpilation. Cannot write transpilation (" + transpilation + ")"))
                     .getBytes(charset);
             Files.write(transpilation.getTarget(), bytes);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
     }
-
 }

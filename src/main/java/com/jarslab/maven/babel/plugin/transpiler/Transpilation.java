@@ -6,11 +6,13 @@ import java.nio.file.Path;
 import java.util.Optional;
 
 @Value.Immutable
-public interface Transpilation {
-
+public interface Transpilation
+{
     TranspilationContext getContext();
-    Path getSource();
-    Path getTarget();
-    Optional<String> getResult();
 
+    Path getSource();
+
+    Path getTarget();
+
+    Optional<String> getResult();
 }

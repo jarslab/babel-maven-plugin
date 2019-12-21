@@ -15,8 +15,8 @@ import java.nio.file.Paths;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(MockitoJUnitRunner.class)
-public class BabelTranspilerTest {
-
+public class BabelTranspilerTest
+{
     @Rule
     public ExpectedException expectedException = ExpectedException.none();
 
@@ -30,7 +30,8 @@ public class BabelTranspilerTest {
 
 
     @Test
-    public void shouldTranspileEs6File() {
+    public void shouldTranspileEs6File()
+    {
         // Given
         Transpilation transpilation = ImmutableTranspilation.builder()
                 .source(TestUtils.getBasePath().resolve(Paths.get("src", "a", "test-es6.js")))
@@ -46,7 +47,8 @@ public class BabelTranspilerTest {
     }
 
     @Test
-    public void shouldTranspileReactFile() {
+    public void shouldTranspileReactFile()
+    {
         // Given
         Transpilation transpilation = ImmutableTranspilation.builder()
                 .source(TestUtils.getBasePath().resolve(Paths.get("src", "a", "test-react.js")))
@@ -59,5 +61,4 @@ public class BabelTranspilerTest {
         // Then
         assertThat(transpilation.getResult()).get().isEqualTo(TestUtils.getResourceAsString("/trans/a/trans-test-react.js"));
     }
-
 }

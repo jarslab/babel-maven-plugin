@@ -7,9 +7,10 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.stream.Collectors;
 
-public class TestUtils {
-
-    public static Path getBasePath() {
+public class TestUtils
+{
+    public static Path getBasePath()
+    {
         try {
             return Paths.get(TestUtils.class.getResource("/").toURI());
         } catch (URISyntaxException e) {
@@ -17,7 +18,8 @@ public class TestUtils {
         }
     }
 
-    public static Path getBabelPath() {
+    public static Path getBabelPath()
+    {
         try {
             return Paths.get(TestUtils.class.getResource("/babel-6.26.0.min.js").toURI());
         } catch (URISyntaxException e) {
@@ -25,15 +27,16 @@ public class TestUtils {
         }
     }
 
-    public static String getResourceAsString(String resource) {
+    public static String getResourceAsString(String resource)
+    {
         return getResourceAsString(TestUtils.class, resource);
     }
 
-    private static String getResourceAsString(Class<TestUtils> aClass, String resource) {
+    private static String getResourceAsString(Class<TestUtils> aClass, String resource)
+    {
         return new BufferedReader(new InputStreamReader(
                 aClass.getResourceAsStream(resource)))
                 .lines()
                 .collect(Collectors.joining("\n"));
     }
-
 }

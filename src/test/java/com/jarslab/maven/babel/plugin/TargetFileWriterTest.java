@@ -18,8 +18,8 @@ import java.nio.file.Paths;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(MockitoJUnitRunner.class)
-public class TargetFileWriterTest {
-
+public class TargetFileWriterTest
+{
     private static final Path TMP_DIRECTORY = Paths.get(System.getProperty("java.io.tmpdir"));
     private static final String TEST_INPUT = "test";
 
@@ -27,7 +27,8 @@ public class TargetFileWriterTest {
     private Log log;
 
     @Test
-    public void shouldWriteFile() throws Exception {
+    public void shouldWriteFile() throws Exception
+    {
         // Given
         Transpilation transpileContext = ImmutableTranspilation.builder()
                 .source(Paths.get("foo"))
@@ -47,5 +48,4 @@ public class TargetFileWriterTest {
         byte[] bytes = Files.readAllBytes(TMP_DIRECTORY.resolve(Paths.get("src", "test.js")));
         assertThat(bytes).isEqualTo(TEST_INPUT.getBytes());
     }
-
 }

@@ -11,13 +11,14 @@ import java.util.Collections;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class BabelMojoTest {
-
+public class BabelMojoTest
+{
     @Rule
     public ExpectedException expectedException = ExpectedException.none();
 
     @Test
-    public void shouldFailForNotExistedBabelPath() throws MojoFailureException, MojoExecutionException {
+    public void shouldFailForNotExistedBabelPath() throws MojoFailureException, MojoExecutionException
+    {
         // Given
         final BabelMojo babelMojo = getBabelMojo();
         babelMojo.setBabelSrc(TestUtils.getBasePath().resolve("bagel.min.js").toFile());
@@ -30,7 +31,8 @@ public class BabelMojoTest {
     }
 
     @Test
-    public void shouldFailForNoPresets() throws MojoFailureException, MojoExecutionException {
+    public void shouldFailForNoPresets() throws MojoFailureException, MojoExecutionException
+    {
         // Given
         final BabelMojo babelMojo = getBabelMojo();
         babelMojo.setPresets("");
@@ -43,7 +45,8 @@ public class BabelMojoTest {
     }
 
     @Test
-    public void shouldDoNothingForMissingSourceFiles() throws MojoFailureException, MojoExecutionException {
+    public void shouldDoNothingForMissingSourceFiles() throws MojoFailureException, MojoExecutionException
+    {
         // Given
         final BabelMojo babelMojo = getBabelMojo();
         babelMojo.setJsSourceFiles(Collections.emptyList());
@@ -57,7 +60,8 @@ public class BabelMojoTest {
     }
 
     @Test
-    public void shouldRunCompleteExecution() throws MojoFailureException, MojoExecutionException {
+    public void shouldRunCompleteExecution() throws MojoFailureException, MojoExecutionException
+    {
         // Given
         final BabelMojo babelMojo = getBabelMojo();
 
@@ -68,7 +72,8 @@ public class BabelMojoTest {
         assertThat(Paths.get(System.getProperty("java.io.tmpdir")).resolve(Paths.get("src", "a"))).exists();
     }
 
-    private BabelMojo getBabelMojo() {
+    private BabelMojo getBabelMojo()
+    {
         BabelMojo babelMojo = new BabelMojo();
         babelMojo.setVerbose(true);
         babelMojo.setBabelSrc(TestUtils.getBabelPath().toFile());
@@ -82,5 +87,4 @@ public class BabelMojoTest {
         babelMojo.setEncoding("UTF-8");
         return babelMojo;
     }
-
 }
