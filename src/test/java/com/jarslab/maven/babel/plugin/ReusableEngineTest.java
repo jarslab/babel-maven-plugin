@@ -2,6 +2,10 @@ package com.jarslab.maven.babel.plugin;
 
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.plugin.logging.SystemStreamLog;
+import org.graalvm.polyglot.Context;
+import org.graalvm.polyglot.Source;
+import org.graalvm.polyglot.Value;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -43,13 +47,11 @@ public class ReusableEngineTest
     @Test
     public void testBabel() throws Exception
     {
-
         Stopwatch stopwatch = new Stopwatch();
-        InputStream inputStream = ReusableEngineTest.class.getResourceAsStream("/babel-6.26.0.min.js");
+        InputStream inputStream = ReusableEngineTest.class.getResourceAsStream("/babel-7.8.4.min.js");
         InputStreamReader fileReader = new InputStreamReader(inputStream, Charset.forName("UTF-8"));
-        ScriptEngine engine = new ScriptEngineManager(null).getEngineByName("nashorn");
-        Bindings bindings = engine.getBindings(ScriptContext.ENGINE_SCOPE);
-        engine.eval(fileReader, bindings);
+        final Context engine = Context.newBuilder().allowExperimentalOptions(true).build();
+        engine.eval(Source.newBuilder("js", fileReader, "babel-7.8.4.min.js").build());
 
         log.info("Initialized script engine in " + stopwatch.stop());
 
@@ -58,8 +60,9 @@ public class ReusableEngineTest
                 ReusableEngineTest.class.getResourceAsStream("/src/test.js")))
                 .lines().collect(Collectors.joining());
         String srcBinding = "transpilationSource";
-        bindings.put(srcBinding, source);
-        String result = (String) engine.eval("Babel.transform(" + srcBinding + ", { presets: ['es2015'] }).code", bindings);
+        final Value bindings = engine.getBindings("js");
+        bindings.putMember(srcBinding, source);
+        String result = engine.eval("js", "Babel.transform(" + srcBinding + ", { presets: ['es2015'] }).code").asString();
 
         stopwatch.stop();
         log.info("Transpiled source in " + stopwatch);
@@ -80,6 +83,7 @@ public class ReusableEngineTest
      * However, because loading the babel library into the engine takes quite some time, it is a good
      * idea to eval the minified babel once, and then reuse the engine to transpile each source file.
      */
+    @Ignore("Update with graalvm")
     public void testReuseEngine() throws Exception
     {
 

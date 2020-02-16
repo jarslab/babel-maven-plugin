@@ -1,14 +1,11 @@
 package com.jarslab.maven.babel.plugin.transpiler;
 
 import org.apache.maven.plugin.logging.Log;
+import org.graalvm.polyglot.Context;
+import org.graalvm.polyglot.Source;
+import org.graalvm.polyglot.Value;
 
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
-import javax.script.ScriptException;
-import javax.script.SimpleBindings;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
 
@@ -19,13 +16,11 @@ import static java.util.stream.Collectors.joining;
 
 public class BabelTranspiler
 {
-    private static final String JAVASCRIPT_MIME_TYPE = "text/javascript";
     private static final String INPUT_VARIABLE = "input";
     private static final String BABEL_EXECUTE = "Babel.transform(%s, {presets: [%s]}).code";
 
     private TranspilationContext context;
-    private ScriptEngine engine;
-    private SimpleBindings simpleBindings;
+    private Context engine;
 
     private void initialize(final TranspilationContext context)
     {
@@ -39,15 +34,11 @@ public class BabelTranspiler
     private void createEngine()
     {
         context.getLog().debug("Initializing script engine");
-        try (InputStreamReader babelReader = new InputStreamReader(
-                new FileInputStream(context.getBabelSource()), context.getCharset())) {
-            engine = new ScriptEngineManager(null).getEngineByMimeType(JAVASCRIPT_MIME_TYPE);
-            simpleBindings = new SimpleBindings();
-            engine.eval(babelReader, simpleBindings);
+        try {
+            engine = Context.newBuilder().allowExperimentalOptions(true).build();
+            engine.eval(Source.newBuilder("js", context.getBabelSource()).build());
         } catch (IOException e) {
             throw new UncheckedIOException(e);
-        } catch (ScriptException e) {
-            throw new RuntimeException(e);
         }
     }
 
@@ -61,16 +52,14 @@ public class BabelTranspiler
         try {
             final String source = Files.lines(transpilation.getSource(), context.getCharset())
                     .collect(joining(lineSeparator()));
-            simpleBindings.put(INPUT_VARIABLE, source);
-            final String result = (String) engine.eval(
-                    format(BABEL_EXECUTE, INPUT_VARIABLE, context.getPresets()), simpleBindings);
+            final Value bindings = engine.getBindings("js");
+            bindings.putMember(INPUT_VARIABLE, source);
+            final String result = engine.eval("js", format(BABEL_EXECUTE, INPUT_VARIABLE, context.getPresets())).asString();
             if (log.isDebugEnabled()) {
                 log.debug(format("%s result:\n%s", transpilation.getTarget(), result));
             }
             return ImmutableTranspilation.copyOf(transpilation).withResult(result);
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
-        } catch (ScriptException e) {
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }

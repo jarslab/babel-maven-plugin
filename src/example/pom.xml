@@ -56,7 +56,7 @@
                             <verbose>true</verbose>
                             <threads>3</threads>
                             <encoding>${project.build.sourceEncoding}</encoding>
-                            <babelSrc>${project.basedir}/src/main/resources/babel-6.26.0.min.js</babelSrc>
+                            <babelSrc>${project.basedir}/src/main/resources/babel-7.8.4.min.js</babelSrc>
                             <sourceDir>${project.basedir}/src/main/resources/js</sourceDir>
                             <targetDir>${project.basedir}/target/classes/assets</targetDir>
                             <jsFiles>

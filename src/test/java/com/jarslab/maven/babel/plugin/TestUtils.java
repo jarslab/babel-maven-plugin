@@ -21,7 +21,7 @@ public class TestUtils
     public static Path getBabelPath()
     {
         try {
-            return Paths.get(TestUtils.class.getResource("/babel-6.26.0.min.js").toURI());
+            return Paths.get(TestUtils.class.getResource("/babel-7.8.4.min.js").toURI());
         } catch (URISyntaxException e) {
             throw new RuntimeException(e);
         }
