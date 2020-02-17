@@ -31,23 +31,23 @@ public class ParallelBabelTranspilerStrategy implements BabelTranspilerStrategy
     {
         final ConcurrentLinkedQueue<Transpilation> queue = new ConcurrentLinkedQueue<>(transpilations);
         // Each thread's task is to create babel transpiler and perform as much transpilations as possible
-        Supplier<Collection<Transpilation>> task = () -> {
+        final Supplier<Collection<Transpilation>> task = () -> {
+            Thread.currentThread().setContextClassLoader(getClass().getClassLoader());
             try (BabelTranspiler transpiler = new BabelTranspiler()) {
-                Transpilation transpilation;
-                Set<Transpilation> transpiled = new HashSet<>();
-                while ((transpilation = queue.poll()) != null) {
+                final Set<Transpilation> transpilationResults = new HashSet<>();
+                Transpilation currentTranspilation;
+                while ((currentTranspilation = queue.poll()) != null) {
                     if (log.isDebugEnabled()) {
                         String name = Thread.currentThread().getName();
-                        log.debug(format("[%s] transpiling %s", name, transpilation.getSource()));
+                        log.debug(format("[%s] transpiling %s", name, currentTranspilation.getSource()));
                     }
-                    transpiled.add(transpiler.execute(transpilation));
+                    transpilationResults.add(transpiler.execute(currentTranspilation));
                 }
-                return transpiled;
+                return transpilationResults;
             }
         };
 
-        Collection<CompletableFuture<Collection<Transpilation>>> futures = new HashSet<>();
-
+        final Collection<CompletableFuture<Collection<Transpilation>>> futures = new HashSet<>();
         for (int i = 0; i < threads; i++) {
             futures.add(CompletableFuture.supplyAsync(task));
         }

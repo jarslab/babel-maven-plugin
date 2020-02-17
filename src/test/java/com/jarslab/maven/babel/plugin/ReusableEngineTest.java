@@ -5,19 +5,13 @@ import org.apache.maven.plugin.logging.SystemStreamLog;
 import org.graalvm.polyglot.Context;
 import org.graalvm.polyglot.Source;
 import org.graalvm.polyglot.Value;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-import javax.script.Bindings;
-import javax.script.ScriptContext;
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.nio.charset.Charset;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.NumberFormat;
@@ -30,6 +24,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static java.lang.String.format;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class ReusableEngineTest
@@ -49,7 +44,7 @@ public class ReusableEngineTest
     {
         Stopwatch stopwatch = new Stopwatch();
         InputStream inputStream = ReusableEngineTest.class.getResourceAsStream("/babel-7.8.4.min.js");
-        InputStreamReader fileReader = new InputStreamReader(inputStream, Charset.forName("UTF-8"));
+        InputStreamReader fileReader = new InputStreamReader(inputStream, UTF_8);
         final Context engine = Context.newBuilder().allowExperimentalOptions(true).build();
         engine.eval(Source.newBuilder("js", fileReader, "babel-7.8.4.min.js").build());
 
@@ -83,20 +78,16 @@ public class ReusableEngineTest
      * However, because loading the babel library into the engine takes quite some time, it is a good
      * idea to eval the minified babel once, and then reuse the engine to transpile each source file.
      */
-    @Ignore("Update with graalvm")
     public void testReuseEngine() throws Exception
     {
 
         log.info("Initialize script engine ...");
 
         Stopwatch stopwatch = new Stopwatch();
-        InputStream inputStream = ReusableEngineTest.class.getResourceAsStream("/babel-6.26.0.min.js");
-        InputStreamReader fileReader = new InputStreamReader(inputStream, Charset.forName("UTF-8"));
-        ScriptEngineManager scriptEngineManager = new ScriptEngineManager();
-        ScriptEngine engine = scriptEngineManager.getEngineByName("nashorn");
-        Bindings bindings = engine.getBindings(ScriptContext.ENGINE_SCOPE);
-        engine.eval(fileReader, bindings);
-        scriptEngineManager.setBindings(bindings);
+        InputStream inputStream = ReusableEngineTest.class.getResourceAsStream("/babel-7.8.4.min.js");
+        InputStreamReader fileReader = new InputStreamReader(inputStream, UTF_8);
+        final Context engine = Context.newBuilder().allowExperimentalOptions(true).build();
+        engine.eval(Source.newBuilder("js", fileReader, "babel-7.8.4.min.js").build());
 
         log.info("Initialized script engine in " + stopwatch.stop());
 
@@ -111,10 +102,10 @@ public class ReusableEngineTest
                         .lines().collect(Collectors.joining());
                 String srcBinding = "transpilationSrc";
                 String optBinding = "transpilationOpt";
-                Bindings taskBindings = engine.getBindings(ScriptContext.ENGINE_SCOPE);
-                taskBindings.put(srcBinding, source);
-                taskBindings.put(optBinding, "{ presets: ['es2015'] }");
-                String result = (String) engine.eval("Babel.transform(" + srcBinding + ", { presets: ['es2015'] }).code", taskBindings);
+                final Value bindings = engine.getBindings("js");
+                bindings.putMember(srcBinding, source);
+                bindings.putMember(optBinding, "{ presets: ['es2015'] }");
+                String result = engine.eval("js", "Babel.transform(" + srcBinding + ", { presets: ['es2015'] }).code").asString();
 
                 assertThat(result).isEqualTo(EXPECTED_RESULT);
 

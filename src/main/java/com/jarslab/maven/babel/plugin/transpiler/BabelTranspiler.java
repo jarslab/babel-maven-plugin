@@ -2,6 +2,7 @@ package com.jarslab.maven.babel.plugin.transpiler;
 
 import org.apache.maven.plugin.logging.Log;
 import org.graalvm.polyglot.Context;
+import org.graalvm.polyglot.PolyglotAccess;
 import org.graalvm.polyglot.Source;
 import org.graalvm.polyglot.Value;
 
@@ -12,6 +13,7 @@ import java.nio.file.Files;
 import static java.lang.String.format;
 import static java.lang.System.lineSeparator;
 import static java.util.Objects.requireNonNull;
+import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.joining;
 
 public class BabelTranspiler implements AutoCloseable
@@ -35,7 +37,10 @@ public class BabelTranspiler implements AutoCloseable
     {
         transpilationContext.getLog().debug("Initializing script engine");
         try {
-            executionContext = Context.newBuilder().allowExperimentalOptions(true).build();
+            executionContext = Context.newBuilder()
+                    .allowExperimentalOptions(true)
+                    .allowPolyglotAccess(PolyglotAccess.ALL)
+                    .build();
             executionContext.eval(Source.newBuilder("js", transpilationContext.getBabelSource()).build());
         } catch (IOException e) {
             throw new UncheckedIOException(e);
@@ -67,6 +72,6 @@ public class BabelTranspiler implements AutoCloseable
     @Override
     public void close()
     {
-        executionContext.close();
+        ofNullable(executionContext).ifPresent(Context::close);
     }
 }
