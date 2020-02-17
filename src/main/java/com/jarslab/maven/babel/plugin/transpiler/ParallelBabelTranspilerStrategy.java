@@ -14,17 +14,13 @@ import static java.lang.Runtime.getRuntime;
 import static java.lang.String.format;
 import static java.util.Objects.requireNonNull;
 
-/**
- * Uses a multiple BabelTranspilers in parallel, each of which performs transpilations
- * in sequence.
- */
-class ParallelBabelTranspilerStrategy implements BabelTranspilerStrategy
+public class ParallelBabelTranspilerStrategy implements BabelTranspilerStrategy
 {
     private final Log log;
     private final int threads;
 
-    ParallelBabelTranspilerStrategy(final Log log,
-                                    final int threads)
+    public ParallelBabelTranspilerStrategy(final Log log,
+                                           final int threads)
     {
         this.log = requireNonNull(log);
         this.threads = getAvailableThreads(threads);
@@ -36,17 +32,18 @@ class ParallelBabelTranspilerStrategy implements BabelTranspilerStrategy
         final ConcurrentLinkedQueue<Transpilation> queue = new ConcurrentLinkedQueue<>(transpilations);
         // Each thread's task is to create babel transpiler and perform as much transpilations as possible
         Supplier<Collection<Transpilation>> task = () -> {
-            BabelTranspiler transpiler = new BabelTranspiler();
-            Transpilation transpilation;
-            Set<Transpilation> transpiled = new HashSet<>();
-            while ((transpilation = queue.poll()) != null) {
-                if (log.isDebugEnabled()) {
-                    String name = Thread.currentThread().getName();
-                    log.debug(format("[%s] transpiling %s", name, transpilation.getSource()));
+            try (BabelTranspiler transpiler = new BabelTranspiler()) {
+                Transpilation transpilation;
+                Set<Transpilation> transpiled = new HashSet<>();
+                while ((transpilation = queue.poll()) != null) {
+                    if (log.isDebugEnabled()) {
+                        String name = Thread.currentThread().getName();
+                        log.debug(format("[%s] transpiling %s", name, transpilation.getSource()));
+                    }
+                    transpiled.add(transpiler.execute(transpilation));
                 }
-                transpiled.add(transpiler.execute(transpilation));
+                return transpiled;
             }
-            return transpiled;
         };
 
         Collection<CompletableFuture<Collection<Transpilation>>> futures = new HashSet<>();

@@ -1,9 +1,7 @@
 package com.jarslab.maven.babel.plugin;
 
-import com.jarslab.maven.babel.plugin.transpiler.BabelTranspilerFactory;
-import com.jarslab.maven.babel.plugin.transpiler.BabelTranspilerStrategy;
+import com.jarslab.maven.babel.plugin.transpiler.ParallelBabelTranspilerStrategy;
 import com.jarslab.maven.babel.plugin.transpiler.Transpilation;
-import com.jarslab.maven.babel.plugin.transpiler.TranspileStrategy;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -25,14 +23,6 @@ public class BabelMojo extends AbstractMojo
 {
     @Parameter(property = "verbose", defaultValue = "false")
     private boolean verbose = false;
-
-    /**
-     * @deprecated in favor of {@link #threads}
-     */
-    @SuppressWarnings("DeprecatedIsStillUsed") // Still in use for backwards compatibility
-    @Parameter(property = "parallel", defaultValue = "false")
-    @Deprecated
-    private boolean parallel = false;
 
     @Parameter(property = "threads", defaultValue = "1")
     private int threads = 1;
@@ -85,29 +75,18 @@ public class BabelMojo extends AbstractMojo
             return;
         }
 
-        // For backwards compatibility, if parallel is set to true, and #threads has the default value, set the number of threads to 2
-        if (threads == 1 && parallel) {
-            threads = 2;
-        }
-
-        final TranspileStrategy transpileStrategy = threads > 1 ?
-                TranspileStrategy.PARALLEL :
-                TranspileStrategy.SEQUENTIAL;
-        final TranspilationInitializer transpilationInitializer = new TranspilationInitializer(this);
-        final Set<Transpilation> transpilations = transpilationInitializer.getTranspilations();
-
+        final Set<Transpilation> transpilations = new TranspilationInitializer(this).getTranspilations();
         if (transpilations.isEmpty()) {
             getLog().info("No files found to transpile.");
             return;
         }
-
         if (verbose) {
             getLog().info(format("Found %s files to transpile.", transpilations.size()));
         }
 
-        final BabelTranspilerStrategy transpiler = BabelTranspilerFactory.getTranspiler(transpileStrategy, this);
         try {
-            transpiler.execute(transpilations)
+            new ParallelBabelTranspilerStrategy(getLog(), threads)
+                    .execute(transpilations)
                     .parallel()
                     .forEach(TargetFileWriter::writeTargetFile);
         } catch (Exception e) {
@@ -119,12 +98,6 @@ public class BabelMojo extends AbstractMojo
     public boolean isVerbose()
     {
         return this.verbose;
-    }
-
-    @Deprecated
-    public boolean isParallel()
-    {
-        return this.parallel;
     }
 
     public int getThreads()
@@ -180,12 +153,6 @@ public class BabelMojo extends AbstractMojo
     public void setVerbose(boolean verbose)
     {
         this.verbose = verbose;
-    }
-
-    @Deprecated
-    public void setParallel(boolean parallel)
-    {
-        this.parallel = parallel;
     }
 
     public void setThreads(int threads)
@@ -258,7 +225,6 @@ public class BabelMojo extends AbstractMojo
     {
         return "BabelMojo{" +
                 "verbose=" + verbose +
-                ", parallel=" + parallel +
                 ", threads=" + threads +
                 ", babelSrc=" + babelSrc +
                 ", sourceDir=" + sourceDir +

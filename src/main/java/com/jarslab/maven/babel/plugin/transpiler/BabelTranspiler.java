@@ -14,29 +14,29 @@ import static java.lang.System.lineSeparator;
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.joining;
 
-public class BabelTranspiler
+public class BabelTranspiler implements AutoCloseable
 {
     private static final String INPUT_VARIABLE = "input";
     private static final String BABEL_EXECUTE = "Babel.transform(%s, {presets: [%s]}).code";
 
-    private TranspilationContext context;
-    private Context engine;
+    private TranspilationContext transpilationContext;
+    private Context executionContext;
 
     private void initialize(final TranspilationContext context)
     {
         requireNonNull(context);
-        if (this.context == null || !this.context.equals(context)) {
-            this.context = context;
+        if (this.transpilationContext == null || !this.transpilationContext.equals(context)) {
+            this.transpilationContext = context;
             createEngine();
         }
     }
 
     private void createEngine()
     {
-        context.getLog().debug("Initializing script engine");
+        transpilationContext.getLog().debug("Initializing script engine");
         try {
-            engine = Context.newBuilder().allowExperimentalOptions(true).build();
-            engine.eval(Source.newBuilder("js", context.getBabelSource()).build());
+            executionContext = Context.newBuilder().allowExperimentalOptions(true).build();
+            executionContext.eval(Source.newBuilder("js", transpilationContext.getBabelSource()).build());
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
@@ -45,16 +45,16 @@ public class BabelTranspiler
     public synchronized Transpilation execute(final Transpilation transpilation)
     {
         initialize(transpilation.getContext());
-        final Log log = context.getLog();
-        if (context.isVerbose()) {
+        final Log log = transpilationContext.getLog();
+        if (transpilationContext.isVerbose()) {
             log.info(format("Transpiling %s -> %s", transpilation.getSource(), transpilation.getTarget()));
         }
         try {
-            final String source = Files.lines(transpilation.getSource(), context.getCharset())
+            final String source = Files.lines(transpilation.getSource(), transpilationContext.getCharset())
                     .collect(joining(lineSeparator()));
-            final Value bindings = engine.getBindings("js");
+            final Value bindings = executionContext.getBindings("js");
             bindings.putMember(INPUT_VARIABLE, source);
-            final String result = engine.eval("js", format(BABEL_EXECUTE, INPUT_VARIABLE, context.getPresets())).asString();
+            final String result = executionContext.eval("js", format(BABEL_EXECUTE, INPUT_VARIABLE, transpilationContext.getPresets())).asString();
             if (log.isDebugEnabled()) {
                 log.debug(format("%s result:\n%s", transpilation.getTarget(), result));
             }
@@ -62,5 +62,11 @@ public class BabelTranspiler
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @Override
+    public void close()
+    {
+        executionContext.close();
     }
 }
