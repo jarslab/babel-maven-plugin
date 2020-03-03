@@ -2,20 +2,19 @@
 
 # Babel Maven Plugin
 Plugin lets you to execute Babel transcription for given JavaScript files. 
-It requires no npm or node.js, it is plain Java project which works perfectly combined with WebJars.
+It requires no npm or node.js, it is plain Java project (based on embedded GraalVM from version 1.4) which works perfectly combined with WebJars.
 
 ## Maven coords
 ```xml
 <dependency>
   <groupId>com.jarslab.maven</groupId>
   <artifactId>babel-maven-plugin</artifactId>
-  <version>1.3</version>
+  <version>1.4</version>
 </dependency>
 ```
 
 ## Settings, ie buttons and knobs
 * **`verbose`** - no surprises, the execution becomes a bit more talkative (default: _false_),
-* ~~**`parallel`** - if true will run files transpilation in parallel (on ForkJoin pool) (default: _false_)~~ **deprecated** in favor of **`threads`**.
 * **`threads`** - number of threads to use when transpiling (default: _1_, will be capped on the amount of processors available)
 * **`encoding`** - will apply chosen encoding during files operations (read/write) (default: `Charset.defaultCharset()`),
 * **`babelSrc`** - readable path to standalone(!) Babel sources. It can be provided from WebJars dependency, minified 
@@ -33,7 +32,7 @@ or development version,
 <plugin>
     <groupId>com.jarslab.maven</groupId>
     <artifactId>babel-maven-plugin</artifactId>
-    <version>1.3</version>
+    <version>1.4</version>
     <executions>
         <execution>
             <id>js-transpile</id>
@@ -43,6 +42,7 @@ or development version,
             </goals>
             <configuration>
                 <verbose>true</verbose>
+                <threads>4</threads>
                 <babelSrc>${project.basedir}/target/classes/assets/jslib/babel.min.js</babelSrc>
                 <sourceDir>${project.basedir}/target/classes/assets/</sourceDir>
                 <targetDir>${project.basedir}/target/classes/assets/</targetDir>
