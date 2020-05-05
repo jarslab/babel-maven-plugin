@@ -32,33 +32,45 @@ public class BabelTranspilerTest
     @Test
     public void shouldTranspileEs6File()
     {
-        // Given
+        //given
         Transpilation transpilation = ImmutableTranspilation.builder()
                 .source(TestUtils.getBasePath().resolve(Paths.get("src", "a", "test-es6.js")))
                 .target(Paths.get("foo"))
                 .context(contextBuilder.presets("'es2015'").build())
                 .build();
-
-        // When
+        //when
         transpilation = new BabelTranspiler().execute(transpilation);
-
-        // Then
+        //then
         assertThat(transpilation.getResult()).get().isEqualTo(TestUtils.getResourceAsString("/trans/a/trans-test-es6.js"));
     }
 
     @Test
     public void shouldTranspileReactFile()
     {
-        // Given
+        //given
         Transpilation transpilation = ImmutableTranspilation.builder()
                 .source(TestUtils.getBasePath().resolve(Paths.get("src", "a", "test-react.js")))
                 .target(Paths.get("foo"))
                 .context(contextBuilder.presets("'react'").build())
                 .build();
-
+        //when
         transpilation = new BabelTranspiler().execute(transpilation);
-
-        // Then
+        //then
         assertThat(transpilation.getResult()).get().isEqualTo(TestUtils.getResourceAsString("/trans/a/trans-test-react.js"));
+    }
+
+    @Test
+    public void shouldTranspileAsyncFile()
+    {
+        //given
+        Transpilation transpilation = ImmutableTranspilation.builder()
+                .source(TestUtils.getBasePath().resolve(Paths.get("src", "a", "test-async.js")))
+                .target(Paths.get("foo"))
+                .context(contextBuilder.presets("'es2017'").build())
+                .build();
+        //when
+        transpilation = new BabelTranspiler().execute(transpilation);
+        //then
+        assertThat(transpilation.getResult()).get().isEqualTo(TestUtils.getResourceAsString("/trans/a/trans-test-async.js"));
     }
 }

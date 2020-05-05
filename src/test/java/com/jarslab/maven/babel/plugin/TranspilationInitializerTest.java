@@ -60,7 +60,7 @@ public class TranspilationInitializerTest {
         Set<Transpilation> transpilations = new TranspilationInitializer(babelMojo).getTranspilations();
 
         //Then
-        assertThat(getSourceFilesNames(transpilations)).containsOnly("test-es6.js", "test-react.js");
+        assertThat(getSourceFilesNames(transpilations)).containsOnly("test-es6.js", "test-react.js", "test-async.js");
     }
 
     @Test
@@ -72,7 +72,7 @@ public class TranspilationInitializerTest {
         Set<Transpilation> transpilations = new TranspilationInitializer(babelMojo).getTranspilations();
 
         //Then
-        assertThat(getSourceFilesNames(transpilations)).containsOnly("test-es6.js", "test-react.js");
+        assertThat(getSourceFilesNames(transpilations)).containsOnly("test-es6.js", "test-react.js", "test-async.js");
     }
 
     @Test
@@ -85,7 +85,7 @@ public class TranspilationInitializerTest {
         Set<Transpilation> transpilations = new TranspilationInitializer(babelMojo).getTranspilations();
 
         //Then
-        assertThat(getSourceFilesNames(transpilations)).containsOnly("test-es6.js");
+        assertThat(getSourceFilesNames(transpilations)).containsOnly("test-es6.js", "test-async.js");
     }
 
     @Test
@@ -99,7 +99,7 @@ public class TranspilationInitializerTest {
         Set<Transpilation> transpilations = new TranspilationInitializer(babelMojo).getTranspilations();
 
         // Then
-        assertThat(getSourceFilesNames(transpilations)).containsOnly("test.js", "test-react.js");
+        assertThat(getSourceFilesNames(transpilations)).containsOnly("test.js", "test-react.js", "test-async.js");
     }
 
     @Test
