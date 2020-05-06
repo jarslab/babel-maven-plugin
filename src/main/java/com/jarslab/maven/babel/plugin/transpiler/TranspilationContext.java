@@ -22,4 +22,10 @@ public interface TranspilationContext
     }
 
     String getPresets();
+
+    @Value.Default
+    default String getPlugins()
+    {
+        return "";
+    }
 }

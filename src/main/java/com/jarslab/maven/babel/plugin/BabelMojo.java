@@ -51,6 +51,9 @@ public class BabelMojo extends AbstractMojo
     @Parameter(property = "presets", defaultValue = "es2015")
     private String presets;
 
+    @Parameter(property = "plugins")
+    private String plugins = "";
+
     @Parameter(property = "encoding")
     private String encoding = defaultCharset().name();
 
@@ -143,6 +146,11 @@ public class BabelMojo extends AbstractMojo
     public String getPresets()
     {
         return this.presets;
+    }
+
+    public String getPlugins()
+    {
+        return this.plugins;
     }
 
     public String getEncoding()

@@ -73,4 +73,22 @@ public class BabelTranspilerTest
         //then
         assertThat(transpilation.getResult()).get().isEqualTo(TestUtils.getResourceAsString("/trans/a/trans-test-async.js"));
     }
+
+    @Test
+    public void shouldTranspileAsyncFileWithPlugins()
+    {
+        //given
+        Transpilation transpilation = ImmutableTranspilation.builder()
+                .source(TestUtils.getBasePath().resolve(Paths.get("src", "a", "test-async.js")))
+                .target(Paths.get("foo"))
+                .context(contextBuilder
+                        .presets("'es2017'")
+                        .plugins("['transform-runtime', {'regenerator': true}]")
+                        .build())
+                .build();
+        //when
+        transpilation = new BabelTranspiler().execute(transpilation);
+        //then
+        assertThat(transpilation.getResult()).get().isEqualTo(TestUtils.getResourceAsString("/trans/a/trans-test-plugin-async.js"));
+    }
 }
