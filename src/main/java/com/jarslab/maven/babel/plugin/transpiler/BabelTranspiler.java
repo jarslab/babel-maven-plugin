@@ -19,7 +19,7 @@ import static java.util.stream.Collectors.joining;
 public class BabelTranspiler implements AutoCloseable
 {
     private static final String INPUT_VARIABLE = "input";
-    private static final String BABEL_EXECUTE = "Babel.transform(%s, {presets: [%s]}).code";
+    private static final String BABEL_EXECUTE = "Babel.transform(%s, {presets: [%s], plugins: [%s]}).code";
 
     private TranspilationContext transpilationContext;
     private Context executionContext;
@@ -59,7 +59,11 @@ public class BabelTranspiler implements AutoCloseable
                     .collect(joining(lineSeparator()));
             final Value bindings = executionContext.getBindings("js");
             bindings.putMember(INPUT_VARIABLE, source);
-            final String result = executionContext.eval("js", format(BABEL_EXECUTE, INPUT_VARIABLE, transpilationContext.getPresets())).asString();
+            final String result = executionContext.eval("js", format(
+                    BABEL_EXECUTE,
+                    INPUT_VARIABLE,
+                    transpilationContext.getPresets(),
+                    transpilationContext.getPlugins())).asString();
             if (log.isDebugEnabled()) {
                 log.debug(format("%s result:\n%s", transpilation.getTarget(), result));
             }

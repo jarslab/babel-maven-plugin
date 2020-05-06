@@ -39,6 +39,7 @@ class TranspilationInitializer
                 .log(babelMojo.getLog())
                 .isVerbose(babelMojo.isVerbose())
                 .presets(getFormattedPresets(babelMojo))
+                .plugins(babelMojo.getPlugins())
                 .build();
         addStaticFiles(transpilations);
         addPatternMatchedFiles(transpilations);

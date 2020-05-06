@@ -9,7 +9,7 @@ It requires no npm or node.js, it is plain Java project (based on embedded Graal
 <dependency>
   <groupId>com.jarslab.maven</groupId>
   <artifactId>babel-maven-plugin</artifactId>
-  <version>1.4</version>
+  <version>1.5</version>
 </dependency>
 ```
 
@@ -26,6 +26,7 @@ or development version,
 * **`jsExcludes`** - list of exceptions for `jsIncludes`,
 * **`prefix`** - optional prefix applied for every translated file,
 * **`presets`** - presets for Babel execution (default: _es2015_),
+* **`plugins`** - plugins for Babel execution (default: _""_ (empty)) _NOTE: any custom plugins are required to be available in provided `babelSrc`_
 
 ## Example
 ```xml
@@ -56,3 +57,7 @@ or development version,
     </executions>
 </plugin>
 ```
+
+## Changelog
+* **1.5**: Add `plugins` option for Babel execution
+* **1.4**: Switch from deprecated Nashorn engine to GraalVM
