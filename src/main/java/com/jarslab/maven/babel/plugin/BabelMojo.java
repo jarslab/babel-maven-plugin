@@ -48,6 +48,9 @@ public class BabelMojo extends AbstractMojo
     @Parameter(property = "prefix")
     private String prefix;
 
+    @Parameter(property = "formatPresets", defaultValue = "true")
+    private boolean formatPresets = true;
+
     @Parameter(property = "presets", defaultValue = "es2015")
     private String presets;
 
@@ -143,6 +146,11 @@ public class BabelMojo extends AbstractMojo
         return this.prefix;
     }
 
+    public boolean isFormatPresets()
+    {
+        return formatPresets;
+    }
+
     public String getPresets()
     {
         return this.presets;
@@ -218,9 +226,19 @@ public class BabelMojo extends AbstractMojo
         this.prefix = prefix;
     }
 
+    public void setFormatPresets(final boolean formatPresets)
+    {
+        this.formatPresets = formatPresets;
+    }
+
     public void setPresets(String presets)
     {
         this.presets = presets;
+    }
+
+    public void setPlugins(final String plugins)
+    {
+        this.plugins = plugins;
     }
 
     public void setEncoding(String encoding)
@@ -241,7 +259,9 @@ public class BabelMojo extends AbstractMojo
                 ", jsSourceIncludes=" + jsSourceIncludes +
                 ", jsSourceExcludes=" + jsSourceExcludes +
                 ", prefix='" + prefix + '\'' +
+                ", formatPresets=" + formatPresets +
                 ", presets='" + presets + '\'' +
+                ", plugins='" + plugins + '\'' +
                 ", encoding='" + encoding + '\'' +
                 '}';
     }

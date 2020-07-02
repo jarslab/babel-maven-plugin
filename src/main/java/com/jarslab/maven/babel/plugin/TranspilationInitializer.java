@@ -38,7 +38,9 @@ class TranspilationInitializer
                 .charset(Charset.forName(babelMojo.getEncoding()))
                 .log(babelMojo.getLog())
                 .isVerbose(babelMojo.isVerbose())
-                .presets(getFormattedPresets(babelMojo))
+                .presets(babelMojo.isFormatPresets() ?
+                        getFormattedPresets(babelMojo) :
+                        babelMojo.getPresets())
                 .plugins(babelMojo.getPlugins())
                 .build();
         addStaticFiles(transpilations);
