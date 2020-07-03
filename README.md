@@ -25,6 +25,7 @@ or development version,
 * **`jsIncludes`** - list of JavaScript files (with simple masks `*`/`?`),
 * **`jsExcludes`** - list of exceptions for `jsIncludes`,
 * **`prefix`** - optional prefix applied for every translated file,
+* **`targetFileExtension`** - if specified, the extension of every translated file will be set to this string (e.g., `js`).
 * **`formatPresets`** - enable/disable presets formatting (default: _true_). Once disabled `presets` are required to be well formatted,  
 * **`presets`** - presets for Babel execution (default: _es2015_),
 * **`plugins`** - plugins for Babel execution (default: _""_ (empty)) _NOTE: any custom plugins are required to be available in provided `babelSrc`_
