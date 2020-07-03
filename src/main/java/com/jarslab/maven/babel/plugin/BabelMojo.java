@@ -47,6 +47,9 @@ public class BabelMojo extends AbstractMojo
 
     @Parameter(property = "prefix")
     private String prefix;
+    
+    @Parameter(property = "targetFileExtension")
+    private String targetFileExtension;
 
     @Parameter(property = "formatPresets", defaultValue = "true")
     private boolean formatPresets = true;
@@ -166,6 +169,10 @@ public class BabelMojo extends AbstractMojo
         return this.encoding;
     }
 
+    public String getTargetFileExtension() {
+		return targetFileExtension;
+	}
+
     public void setVerbose(boolean verbose)
     {
         this.verbose = verbose;
@@ -246,7 +253,11 @@ public class BabelMojo extends AbstractMojo
         this.encoding = encoding;
     }
 
-    @Override
+	public void setTargetFileExtension(String targetFileExtension) {
+		this.targetFileExtension = targetFileExtension;
+	}
+
+	@Override
     public String toString()
     {
         return "BabelMojo{" +
@@ -259,6 +270,7 @@ public class BabelMojo extends AbstractMojo
                 ", jsSourceIncludes=" + jsSourceIncludes +
                 ", jsSourceExcludes=" + jsSourceExcludes +
                 ", prefix='" + prefix + '\'' +
+                ", targetFileExtension='" + targetFileExtension + '\'' +
                 ", formatPresets=" + formatPresets +
                 ", presets='" + presets + '\'' +
                 ", plugins='" + plugins + '\'' +

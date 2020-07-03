@@ -96,7 +96,12 @@ class TranspilationInitializer
     {
         final Path relativePath = getRelativePath(sourceFile);
         final String prefix = babelMojo.getPrefix() == null ? "" : babelMojo.getPrefix();
-        return babelMojo.getTargetDir().toPath().resolve(relativePath).resolve(prefix + sourceFile.getFileName());
+        
+        String targetFileName = prefix + sourceFile.getFileName();
+        if (babelMojo.getTargetFileExtension() != null) 
+        	targetFileName = targetFileName.replaceFirst("\\.[^./]+$", "."+babelMojo.getTargetFileExtension());
+        
+		return babelMojo.getTargetDir().toPath().resolve(relativePath).resolve(targetFileName);
     }
 
     private String removeLeadingSlash(final String subject)
